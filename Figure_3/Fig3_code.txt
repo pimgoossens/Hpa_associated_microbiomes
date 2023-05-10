@@ -1,8 +1,18 @@
-###########please disregard all folder names, 
+###########please disregard all folder names in the following text
 #####
 #towards quantification of genomes of Hpa-associated bacteria in Hpa metagenomes
-#all genomes for Hpa-associated isolates as reported in 'Congruent downy mildew-associated microbiomes reduce plant disease and function as transferable resistobiomes' 
-#can be found in https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data/Genomes
+#
+#all genomes for Hpa-associated isolates as reported in 'Congruent downy mildew-associated microbiomes reduce plant disease and function as transferable resistobiomes' can be found in:
+#https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data/Genomes
+#
+#merged kallisto outputs (counts) for all genera of interest for all investigated metagenomes can be found in:
+#https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data/
+#
+##For kallisto indices: All representative genomes and genomes that were output by bacsort in clusters can be found in: 
+#https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data/Genomes/Cluster_accessions_for_all_genomes_in_kallisto_indices/*
+#
+#Sanger reads from Baxter 2010 (Science) BAC library that mapped to Xanthomonas a0e1a genome, which were used to assemble contigs from these metagenome data, are found in:
+#https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data/fasta_hyaloperonospora_parasitica_highPhred_fixed_2_mapped_on_LC_LB_21_linesRemoved.fq.gz
 #####
 #download Metagenomes from Asai 2018 paper
 #data for six isolates, with long (75 or 60bp) and short reads (35 bp)
