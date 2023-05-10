@@ -1,4 +1,4 @@
-###########please disregard all folder names in the following text
+###########please disregard all folder names in the following text. The code is provided to give insight in relevant parameters and analysis steps
 #####
 #towards quantification of genomes of Hpa-associated bacteria in Hpa metagenomes
 #
