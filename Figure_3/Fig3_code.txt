@@ -1,0 +1,678 @@
+###########please disregard all folder names, 
+#####
+#towards quantification of specific genomes in Hpa metagenomes
+#download Metagenomes from Asai 2018 paper
+#data for six isolates, with long (75 or 60bp) and short reads (35 bp)
+cd /media/vol3/pim/
+mkdir Asai_2018
+cd Asai_2018
+mkdir Cala2
+mkdir Emco5
+mkdir Emoy2
+mkdir Emwa1
+mkdir Hind2
+mkdir Maks9
+#prepared ftp lists from tsv downloaded from ENA for PRJEB22892
+cd /media/vol3/pim/Asai_2018/Cala2
+wget -i ftp_Cala2.txt
+#Cala2, done
+cd /media/vol3/pim/Asai_2018/Emco5
+wget -i ftp_Emco5.txt
+#download halted after al _1 files, restart with list for _2 files
+wget -i ftp_Emco5_2.txt
+#Emco5, done
+cd /media/vol3/pim/Asai_2018/Emoy2
+wget -i ftp_Emoy2.txt
+#Emoy2, done
+cd /media/vol3/pim/Asai_2018/Emwa1
+wget -i ftp_Emwa1.txt
+#Emwa1, done
+cd /media/vol3/pim/Asai_2018/Hind2
+wget -i ftp_Hind2.txt
+#Hind2, done
+cd /media/vol3/pim/Asai_2018/Maks9
+wget -i ftp_Maks9.txt
+#Maks9,  done
+#per isolate (folder), fastqs were divided over 'Short_reads' and 'Long_reads' as appropriate (directories were made in Filezilla)
+#Emwa1 (4x2 (PE) fastqs. 60 bp reads
+#merge R1 files and merge R2 files, then quality filter reads
+###
+#Emwa1
+cd /media/vol3/pim/Asai_2018/Emwa1/Long_reads
+zcat *_1.fastq.gz > Emwa1_1.fastq
+gzip Emwa1_1.fastq
+zcat *_2.fastq.gz > Emwa1_2.fastq
+gzip Emwa1_2.fastq
+java -jar /home/ronnie/software/a5_miseq_linux_20160825/bin/trimmomatic.jar PE Emwa1_1.fastq.gz Emwa1_2.fastq.gz Emwa1_1_output_paired.fastq.gz Emwa1_1_output_unpaired.fastq.gz Emwa1_2_output_paired.fastq.gz Emwa1_2_output_unpaired.fastq.gz SLIDINGWINDOW:4:20 MINLEN:45
+#
+###
+#Cala2, long reads
+cd /media/vol3/pim/Asai_2018/Cala2/Long_reads
+java -jar /home/ronnie/software/a5_miseq_linux_20160825/bin/trimmomatic.jar PE ERR2168725_1.fastq.gz ERR2168725_2.fastq.gz ERR2168725_1_output_paired.fastq.gz ERR2168725_1_output_unpaired.fastq.gz ERR2168725_2_output_paired.fastq.gz ERR2168725_2_output_unpaired.fastq.gz SLIDINGWINDOW:4:20 MINLEN:45
+#Cala2, short reads
+cd /media/vol3/pim/Asai_2018/Cala2/Short_reads
+zcat *_1.fastq.gz > Cala2_1.fastq
+gzip Cala2_1.fastq
+zcat *_2.fastq.gz > Cala2_2.fastq
+gzip Cala2_2.fastq
+java -jar /home/ronnie/software/a5_miseq_linux_20160825/bin/trimmomatic.jar PE Cala2_1.fastq.gz Cala2_2.fastq.gz Cala2_1_output_paired.fastq.gz Cala2_1_output_unpaired.fastq.gz Cala2_2_output_paired.fastq.gz Cala2_2_output_unpaired.fastq.gz SLIDINGWINDOW:4:20 MINLEN:30
+#
+###
+#Emco5, long reads
+cd /media/vol3/pim/Asai_2018/Emco5/Long_reads
+java -jar /home/ronnie/software/a5_miseq_linux_20160825/bin/trimmomatic.jar PE ERR2168724_1.fastq.gz ERR2168724_2.fastq.gz ERR2168724_1_output_paired.fastq.gz ERR2168724_1_output_unpaired.fastq.gz ERR2168724_2_output_paired.fastq.gz ERR2168724_2_output_unpaired.fastq.gz SLIDINGWINDOW:4:20 MINLEN:45
+#Emco5, short reads
+cd /media/vol3/pim/Asai_2018/Emco5/Short_reads
+zcat *_1.fastq.gz > Emco5_1.fastq
+gzip Emco5_1.fastq
+zcat *_2.fastq.gz > Emco5_2.fastq
+gzip Emco5_2.fastq
+java -jar /home/ronnie/software/a5_miseq_linux_20160825/bin/trimmomatic.jar PE Emco5_1.fastq.gz Emco5_2.fastq.gz Emco5_1_output_paired.fastq.gz Emco5_1_output_unpaired.fastq.gz Emco5_2_output_paired.fastq.gz Emco5_2_output_unpaired.fastq.gz SLIDINGWINDOW:4:20 MINLEN:30
+#
+###
+#Maks9, long reads
+cd /media/vol3/pim/Asai_2018/Maks9/Long_reads
+java -jar /home/ronnie/software/a5_miseq_linux_20160825/bin/trimmomatic.jar PE ERR2168726_1.fastq.gz ERR2168726_2.fastq.gz ERR2168726_1_output_paired.fastq.gz ERR2168726_1_output_unpaired.fastq.gz ERR2168726_2_output_paired.fastq.gz ERR2168726_2_output_unpaired.fastq.gz SLIDINGWINDOW:4:20 MINLEN:45
+#Maks9, short reads
+cd /media/vol3/pim/Asai_2018/Maks9/Short_reads
+zcat *_1.fastq.gz > Maks9_1.fastq
+gzip Maks9_1.fastq
+zcat *_2.fastq.gz > Maks9_2.fastq
+gzip Maks9_2.fastq
+java -jar /home/ronnie/software/a5_miseq_linux_20160825/bin/trimmomatic.jar PE Maks9_1.fastq.gz Maks9_2.fastq.gz Maks9_1_output_paired.fastq.gz Maks9_1_output_unpaired.fastq.gz Maks9_2_output_paired.fastq.gz Maks9_2_output_unpaired.fastq.gz SLIDINGWINDOW:4:20 MINLEN:30
+#
+###
+#Emoy2, short reads
+cd /media/vol3/pim/Asai_2018/Emoy2/Short_reads
+zcat *_1.fastq.gz > Emoy2_1.fastq
+gzip Emoy2_1.fastq
+zcat *_2.fastq.gz > Emoy2_2.fastq
+gzip Emoy2_2.fastq
+java -jar /home/ronnie/software/a5_miseq_linux_20160825/bin/trimmomatic.jar PE Emoy2_1.fastq.gz Emoy2_2.fastq.gz Emoy2_1_output_paired.fastq.gz Emoy2_1_output_unpaired.fastq.gz Emoy2_2_output_paired.fastq.gz Emoy2_2_output_unpaired.fastq.gz SLIDINGWINDOW:4:20 MINLEN:30
+#
+###
+#Hind2, short reads
+cd /media/vol3/pim/Asai_2018/Hind2/Short_reads
+zcat *_1.fastq.gz > Hind2_1.fastq
+gzip Hind2_1.fastq
+zcat *_2.fastq.gz > Hind2_2.fastq
+gzip Hind2_2.fastq
+java -jar /home/ronnie/software/a5_miseq_linux_20160825/bin/trimmomatic.jar PE Hind2_1.fastq.gz Hind2_2.fastq.gz Hind2_1_output_paired.fastq.gz Hind2_1_output_unpaired.fastq.gz Hind2_2_output_paired.fastq.gz Hind2_2_output_unpaired.fastq.gz SLIDINGWINDOW:4:20 MINLEN:30
+##############
+######
+#download genomes of relevant genera, 
+#determine non-redundant set with bacsort, 
+#add genomes of interest to this set, 
+#concatenate all contigs within genomes, then each genomes fasta can be treated similarly as one fasta per transcript for kallisto
+#build kallisto index, 
+#quantify genomes within this index in metagenomes from Baxter 2010 and Asai 2018 with kallisto
+###
+#Xanthomonas
+download_genomes.sh "Xanthomonas"
+cluster_genera.py assemblies --threshold 0.02
+cd /media/vol3/pim/Genera_of_interest/Xanthomonas/bacsort_results/clusters
+#copy relevant genomes to cluster folder and gzip
+gzip Xanthomonas_filtered_a0e1a_LC-LB-21.fna #renamed later for manuscript, annotation file provided on github in https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data/Genomes
+#make tree
+export PATH=$PATH:/home/ronnie/git/mashtree/bin/
+export PERL5LIB=/home/ronnie/perllib/lib/perl5/
+export PATH=$PATH:/usr/bin/
+/usr/bin/perl ~/git/mashtree/bin/mashtree --numcpus 12 *.fna.gz > Xanthomonas_and_a0e1a_nonredundant_tree_2021oct.dnd
+mkdir concatenated_genomes
+for fname in *.gz
+do
+ f=">${fname%.gz}"
+ zcat "$fname" | grep -v ">" | tr -d '\n' | sed "1s/^/$f\n/" | sed -e '$a\' | gzip >"${fname%.gz}.2.gz"
+ # do something on $f
+done
+mv *.2.gz concatenated_genomes
+###
+#Methylobacterium
+mkdir /media/vol3/pim/Genera_of_interest/Methylobacterium
+mkdir /media/vol3/pim/Genera_of_interest/Methylobacterium/bacsort_results
+cd /media/vol3/pim/Genera_of_interest/Methylobacterium/bacsort_results
+download_genomes.sh "Methylobacterium"
+cluster_genera.py assemblies --threshold 0.02
+cd /media/vol3/pim/Genera_of_interest/Methylobacterium/bacsort_results/clusters
+#copy relevant genomes to cluster folder and gzip
+gzip Methylobacterium_filtered_15da8_CN-YEM-22.fna #renamed later for manuscript, annotation file provided on github in https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data/Genomes
+#make tree
+/usr/bin/perl ~/git/mashtree/bin/mashtree --numcpus 12 *.fna.gz > Methylobacterium_and_15da8_nonredundant_tree_2021oct.dnd
+mkdir concatenated_genomes
+for fname in *.gz
+do
+ f=">${fname%.gz}"
+ zcat "$fname" | grep -v ">" | tr -d '\n' | sed "1s/^/$f\n/" | sed -e '$a\' | gzip >"${fname%.gz}.2.gz"
+ # do something on $f
+done
+mv *.2.gz concatenated_genomes
+#
+###
+#Aeromicrobium
+mkdir /media/vol3/pim/Genera_of_interest/Aeromicrobium
+mkdir /media/vol3/pim/Genera_of_interest/Aeromicrobium/bacsort_results
+cd /media/vol3/pim/Genera_of_interest/Aeromicrobium/bacsort_results
+download_genomes.sh "Aeromicrobium"
+cluster_genera.py assemblies --threshold 0.02
+cd /media/vol3/pim/Genera_of_interest/Aeromicrobium/bacsort_results/clusters
+#copy relevant genomes to cluster folder and gzip
+gzip Aeromicrobium_filtered_d93fb_PM-R2A-31.fna #renamed later for manuscript, annotation file provided on github in https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data/Genomes
+#make tree
+/usr/bin/perl ~/git/mashtree/bin/mashtree --numcpus 12 *.fna.gz > Aeromicrobium_and_d93fb_nonredundant_tree_2021oct.dnd
+mkdir concatenated_genomes
+for fname in *.gz
+do
+ f=">${fname%.gz}"
+ zcat "$fname" | grep -v ">" | tr -d '\n' | sed "1s/^/$f\n/" | sed -e '$a\' | gzip >"${fname%.gz}.2.gz"
+ # do something on $f
+done
+mv *.2.gz concatenated_genomes
+#
+###
+#Rhizobium
+mkdir /media/vol3/pim/Genera_of_interest/Rhizobium
+mkdir /media/vol3/pim/Genera_of_interest/Rhizobium/bacsort_results
+cd /media/vol3/pim/Genera_of_interest/Rhizobium/bacsort_results
+download_genomes.sh "Rhizobium"
+cluster_genera.py assemblies --threshold 0.02
+cd /media/vol3/pim/Genera_of_interest/Rhizobium/bacsort_results/clusters
+#copy relevant genomes to cluster folder and gzip
+gzip Rhizobium_filtered_2569b_PM-R2A-16.fna
+#make tree
+/usr/bin/perl ~/git/mashtree/bin/mashtree --numcpus 12 *.fna.gz > Rhizobium_and_2569b_nonredundant_tree_2021oct.dnd
+mkdir concatenated_genomes
+for fname in *.gz
+do
+ f=">${fname%.gz}"
+ zcat "$fname" | grep -v ">" | tr -d '\n' | sed "1s/^/$f\n/" | sed -e '$a\' | gzip >"${fname%.gz}.2.gz"
+ # do something on $f
+done
+mv *.2.gz concatenated_genomes
+#
+###
+#Microbacterium
+mkdir /media/vol3/pim/Genera_of_interest/Microbacterium
+mkdir /media/vol3/pim/Genera_of_interest/Microbacterium/bacsort_results
+cd /media/vol3/pim/Genera_of_interest/Microbacterium/bacsort_results
+download_genomes.sh "Microbacterium"
+cluster_genera.py assemblies --threshold 0.02
+cd /media/vol3/pim/Genera_of_interest/Microbacterium/bacsort_results/clusters
+#copy relevant genomes to cluster folder and gzip
+gzip Microbacterium_filtered_f0c76_CN-YEM-9.fna
+gzip Microbacterium_filtered_f0c76_CN-YEM-23.fna
+#make tree
+/usr/bin/perl ~/git/mashtree/bin/mashtree --numcpus 12 *.fna.gz > Microbacterium_and_f0c76_nonredundant_tree_2021oct.dnd
+mkdir concatenated_genomes
+for fname in *.gz
+do
+ f=">${fname%.gz}"
+ zcat "$fname" | grep -v ">" | tr -d '\n' | sed "1s/^/$f\n/" | sed -e '$a\' | gzip >"${fname%.gz}.2.gz"
+ # do something on $f
+done
+mv *.2.gz concatenated_genomes
+#
+###
+#Sphingobium
+mkdir /media/vol3/pim/Genera_of_interest/Sphingobium
+mkdir /media/vol3/pim/Genera_of_interest/Sphingobium/bacsort_results
+cd /media/vol3/pim/Genera_of_interest/Sphingobium/bacsort_results
+download_genomes.sh "Sphingobium"
+cluster_genera.py assemblies --threshold 0.02
+cd /media/vol3/pim/Genera_of_interest/Sphingobium/bacsort_results/clusters
+#copy relevant genomes to cluster folder and gzip
+gzip Sphingobium_filtered_ed6be_redemultiplexed_C17.fna
+#make tree
+/usr/bin/perl ~/git/mashtree/bin/mashtree --numcpus 12 *.fna.gz > Sphingobium_and_ed6be_nonredundant_tree_2021oct.dnd
+mkdir concatenated_genomes
+for fname in *.gz
+do
+ f=">${fname%.gz}"
+ zcat "$fname" | grep -v ">" | tr -d '\n' | sed "1s/^/$f\n/" | sed -e '$a\' | gzip >"${fname%.gz}.2.gz"
+ # do something on $f
+done
+mv *.2.gz concatenated_genomes
+#
+###
+#Arthrobacter
+mkdir /media/vol3/pim/Genera_of_interest/Arthrobacter
+mkdir /media/vol3/pim/Genera_of_interest/Arthrobacter/bacsort_results
+cd /media/vol3/pim/Genera_of_interest/Arthrobacter/bacsort_results
+download_genomes.sh "Arthrobacter"
+cluster_genera.py assemblies --threshold 0.02
+cd /media/vol3/pim/Genera_of_interest/Arthrobacter/bacsort_results/clusters
+#copy relevant genomes to cluster folder and gzip
+gzip Arthrobacter_filtered_42fbd_LC-R2A-7.fna
+#make tree
+/usr/bin/perl ~/git/mashtree/bin/mashtree --numcpus 12 *.fna.gz > Arthrobacter_and_ed6be_nonredundant_tree_2021oct.dnd
+mkdir concatenated_genomes
+for fname in *.gz
+do
+ f=">${fname%.gz}"
+ zcat "$fname" | grep -v ">" | tr -d '\n' | sed "1s/^/$f\n/" | sed -e '$a\' | gzip >"${fname%.gz}.2.gz"
+ # do something on $f
+done
+mv *.2.gz concatenated_genomes
+#
+###
+#Acidovorax
+mkdir /media/vol3/pim/Genera_of_interest/Acidovorax
+mkdir /media/vol3/pim/Genera_of_interest/Acidovorax/bacsort_results
+cd /media/vol3/pim/Genera_of_interest/Acidovorax/bacsort_results
+download_genomes.sh "Acidovorax"
+cluster_genera.py assemblies --threshold 0.02
+cd /media/vol3/pim/Genera_of_interest/Acidovorax/bacsort_results/clusters
+#copy relevant genomes to cluster folder and gzip
+gzip Acidovorax_filtered_a4065_PN_R2A_17.fna
+gzip Acidovorax_filtered_9cce0_PM-TSA-12.fna
+gzip Acidovorax_filtered_9cce0_CN-YEM-19.fna
+#make tree
+/usr/bin/perl ~/git/mashtree/bin/mashtree --numcpus 12 *.fna.gz > Acidovorax_and_ed6be_nonredundant_tree_2021oct.dnd
+mkdir concatenated_genomes
+for fname in *.gz
+do
+ f=">${fname%.gz}"
+ zcat "$fname" | grep -v ">" | tr -d '\n' | sed "1s/^/$f\n/" | sed -e '$a\' | gzip >"${fname%.gz}.2.gz"
+ # do something on $f
+done
+mv *.2.gz concatenated_genomes
+#########
+####
+#All representative genomes and genomes that were output by bacsort in clusters can be found in: 
+#https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data/Genomes/Cluster_accessions_for_all_genomes_in_kallisto_indices
+####
+#########
+###
+#copy all relevant files to wolf2 dir
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emwa1
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emwa1/Long_reads
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Cala2
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Cala2/Long_reads
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Cala2/Short_reads
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emco5
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emco5/Long_reads
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emco5/Short_reads
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Maks9
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Maks9/Long_reads
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Maks9/Short_reads
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emoy2
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emoy2/Short_reads
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emoy2/TRACE
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Hind2
+mkdir /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Hind2/Short_reads
+#
+#copying files
+#
+cp /media/vol3/pim/Asai_2018/Emwa1/Long_reads/*_output_paired.fastq.gz /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emwa1/Long_reads
+cp /media/vol3/pim/Asai_2018/Cala2/Long_reads/*_output_paired.fastq.gz /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Cala2/Long_reads
+cp /media/vol3/pim/Asai_2018/Cala2/Short_reads/*_output_paired.fastq.gz /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Cala2/Short_reads
+cp /media/vol3/pim/Asai_2018/Emco5/Long_reads/*_output_paired.fastq.gz /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emco5/Long_reads
+cp /media/vol3/pim/Asai_2018/Emco5/Short_reads/*_output_paired.fastq.gz /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emco5/Short_reads
+cp /media/vol3/pim/Asai_2018/Maks9/Long_reads/*_output_paired.fastq.gz /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Maks9/Long_reads
+cp /media/vol3/pim/Asai_2018/Maks9/Short_reads/*_output_paired.fastq.gz /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Maks9/Short_reads
+cp /media/vol3/pim/Asai_2018/Emoy2/Short_reads/*_output_paired.fastq.gz /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emoy2/Short_reads
+cp /media/vol3/pim/Asai_2018/Hind2/Short_reads/*_output_paired.fastq.gz /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Hind2/Short_reads
+cp /media/vol3/pim/Hpa_TRACE/fasta_hyaloperonospora_parasitica_highPhred_fixed_2.fq.gz /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emoy2/TRACE
+#####
+####
+###
+##
+#making kallisto index with all (non-redundant) genomes from all genera is too much for server (RAM not sufficient)
+#split in two sets (core and other), make two indices, and run all metagenomes on both indices\
+####
+#analysis of core isolates
+####
+#Emwa1
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emwa1/Long_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/core/Kallisto_CoreHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Emwa1_Kallisto_CoreHpaGenera_20211028_index \
+  -t 8 \
+  Emwa1_1_output_paired.fastq.gz \
+  Emwa1_2_output_paired.fastq.gz
+#Cala2, long reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Cala2/Long_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/core/Kallisto_CoreHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Cala2long_Kallisto_CoreHpaGenera_20211028_index \
+  -t 8 \
+  ERR2168725_1_output_paired.fastq.gz \
+  ERR2168725_2_output_paired.fastq.gz
+#Cala2, short reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Cala2/Short_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/core/Kallisto_CoreHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Cala2short_Kallisto_CoreHpaGenera_20211028_index \
+  -t 8 \
+  Cala2_1_output_paired.fastq.gz \
+  Cala2_2_output_paired.fastq.gz
+###
+#Emco5, long reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emco5/Long_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/core/Kallisto_CoreHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Emco5long_Kallisto_CoreHpaGenera_20211028_index \
+  -t 8 \
+  ERR2168724_1_output_paired.fastq.gz \
+  ERR2168724_2_output_paired.fastq.gz
+#Emco5, short reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emco5/Short_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/core/Kallisto_CoreHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Emco5short_Kallisto_CoreHpaGenera_20211028_index \
+  -t 8 \
+  Emco5_1_output_paired.fastq.gz \
+  Emco5_2_output_paired.fastq.gz
+###
+#Maks9, long reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Maks9/Long_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/core/Kallisto_CoreHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Maks9long_Kallisto_CoreHpaGenera_20211028_index \
+  -t 8 \
+  ERR2168726_1_output_paired.fastq.gz \
+  ERR2168726_2_output_paired.fastq.gz
+#Maks9, short reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Maks9/Short_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/core/Kallisto_CoreHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Maks9short_Kallisto_CoreHpaGenera_20211028_index \
+  -t 8 \
+  Maks9_1_output_paired.fastq.gz \
+  Maks9_2_output_paired.fastq.gz
+###
+#Emoy2, short reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emoy2/Short_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/core/Kallisto_CoreHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Emoy2_Kallisto_CoreHpaGenera_20211028_index \
+  -t 8 \
+  Emoy2_1_output_paired.fastq.gz \
+  Emoy2_2_output_paired.fastq.gz
+###
+#Hind2, short reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Hind2/Short_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/core/Kallisto_CoreHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Hind2_Kallisto_CoreHpaGenera_20211028_index \
+  -t 8 \
+  Hind2_1_output_paired.fastq.gz \
+  Hind2_2_output_paired.fastq.gz
+###
+#TRACE archive Emoy2 Baxter 2010
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emoy2/TRACE
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/core/Kallisto_CoreHpaGenera_20211028_index \
+  --single \
+  -l 620 \
+  -s 20 \
+  -b 10\
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Hpa_TRACE_Kallisto_CoreHpaGenera_20211028_index \
+  -t 8 \
+  fasta_hyaloperonospora_parasitica_highPhred_fixed_2.fq.gz
+#
+####
+#analysis of other isolates
+####
+#Emwa1
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emwa1/Long_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/other/Kallisto_OtherHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Emwa1_Kallisto_OtherHpaGenera_20211028_index \
+  -t 8 \
+  Emwa1_1_output_paired.fastq.gz \
+  Emwa1_2_output_paired.fastq.gz
+#Cala2, long reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Cala2/Long_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/other/Kallisto_OtherHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Cala2long_Kallisto_OtherHpaGenera_20211028_index \
+  -t 8 \
+  ERR2168725_1_output_paired.fastq.gz \
+  ERR2168725_2_output_paired.fastq.gz
+#Cala2, short reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Cala2/Short_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/other/Kallisto_OtherHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Cala2short_Kallisto_OtherHpaGenera_20211028_index \
+  -t 8 \
+  Cala2_1_output_paired.fastq.gz \
+  Cala2_2_output_paired.fastq.gz
+###
+#Emco5, long reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emco5/Long_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/other/Kallisto_OtherHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Emco5long_Kallisto_OtherHpaGenera_20211028_index \
+  -t 8 \
+  ERR2168724_1_output_paired.fastq.gz \
+  ERR2168724_2_output_paired.fastq.gz
+#Emco5, short reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emco5/Short_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/other/Kallisto_OtherHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Emco5short_Kallisto_OtherHpaGenera_20211028_index \
+  -t 8 \
+  Emco5_1_output_paired.fastq.gz \
+  Emco5_2_output_paired.fastq.gz
+###
+#Maks9, long reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Maks9/Long_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/other/Kallisto_OtherHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Maks9long_Kallisto_OtherHpaGenera_20211028_index \
+  -t 8 \
+  ERR2168726_1_output_paired.fastq.gz \
+  ERR2168726_2_output_paired.fastq.gz
+#Maks9, short reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Maks9/Short_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/other/Kallisto_OtherHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Maks9short_Kallisto_OtherHpaGenera_20211028_index \
+  -t 8 \
+  Maks9_1_output_paired.fastq.gz \
+  Maks9_2_output_paired.fastq.gz
+###
+#Emoy2, short reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emoy2/Short_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/other/Kallisto_OtherHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Emoy2_Kallisto_OtherHpaGenera_20211028_index \
+  -t 8 \
+  Emoy2_1_output_paired.fastq.gz \
+  Emoy2_2_output_paired.fastq.gz
+###
+#Hind2, short reads
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Hind2/Short_reads
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/other/Kallisto_OtherHpaGenera_20211028_index \
+  -b 10 \
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Hind2_Kallisto_OtherHpaGenera_20211028_index \
+  -t 8 \
+  Hind2_1_output_paired.fastq.gz \
+  Hind2_2_output_paired.fastq.gz
+####This one is not run yet
+#TRACE archive Emoy2 Baxter 2010
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Asai_2018/Emoy2/TRACE
+kallisto quant -i /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/concatenated_genomes/other/Kallisto_OtherHpaGenera_20211028_index \
+  --single \
+  -l 620 \
+  -s 20 \
+  -b 10\
+  -o /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/Hpa_TRACE_Kallisto_OtherHpaGenera_20211028_index \
+  -t 8 \
+  fasta_hyaloperonospora_parasitica_highPhred_fixed_2.fq.gz ### file to big for upload to github, available upon request, e-mail p.goossens@uu.nl
+#
+###
+#process kallisto outputs and merge
+#
+###
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis
+mkdir 
+cp -r *index Kallisto_outputs_copy
+mkdir HpaCultures
+cd HpaCultures
+mkdir abundance_tsvs
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis
+#change file names in kallisto output folders to indicate sample of origin
+for name in *index/*; do
+    [ ! -f "$name" ] && continue
+
+    dir="$( basename "$( dirname "$name" )" )"
+    newname="$dir/${dir}_${name##*/}"
+
+    if [ ! -e "$newname" ]; then
+        mv "$name" "$newname"
+    fi
+done
+cp /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/*/*.tsv /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/HpaCultures/abundance_tsvs
+#make files with tpm for all kallisto out
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/HpaCultures
+mkdir abundance_tsvs_copy
+cp /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/HpaCultures/abundance_tsvs/*.tsv /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/HpaCultures/abundance_tsvs_copy
+cd /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis/HpaCultures/abundance_tsvs_copy
+mkdir core
+mkdir other
+cp *CoreHpaGenera* core
+cp *OtherHpaGenera* other
+cd core
+awk 'FNR==1 { print substr(FILENAME,1,10) >substr(FILENAME,1,10)".tmp" }
+     FNR >1 { print $5 > substr(FILENAME,1,10)".tmp" }
+     NR==FNR{ print $1  >"first_column.tmp" }' *.tsv
+paste *.tmp > Core_all_tpm.tsv
+#
+#remove unhandy .tmp files
+rm *.tmp
+#move Core_all_tpm.tsv to /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis
+mv Core_all_tpm.tsv /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis
+#make files with counts for all kallisto out
+awk 'FNR==1 { print substr(FILENAME,1,10) >substr(FILENAME,1,10)".count.tmp" }
+     FNR >1 { print $4 > substr(FILENAME,1,10)".count.tmp" }
+     NR==FNR{ print $1  >"first_column.count.tmp" }' *.tsv
+paste *.tmp > Core_all_count.tsv
+#remove unhandy .tmp files
+rm *.tmp
+mv Core_all_count.tsv /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis
+###
+cd ..
+cd other
+awk 'FNR==1 { print substr(FILENAME,1,10) >substr(FILENAME,1,10)".tmp" }
+     FNR >1 { print $5 > substr(FILENAME,1,10)".tmp" }
+     NR==FNR{ print $1  >"first_column.tmp" }' *.tsv
+paste *.tmp > Other_all_tpm.tsv
+#remove unhandy .tmp files
+rm *.tmp
+#move Other_all_tpm.tsv to /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis
+mv Other_all_tpm.tsv /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis
+awk 'FNR==1 { print substr(FILENAME,1,10) >substr(FILENAME,1,10)".count.tmp" }
+     FNR >1 { print $4 > substr(FILENAME,1,10)".count.tmp" }
+     NR==FNR{ print $1  >"first_column.count.tmp" }' *.tsv
+paste *.tmp > Other_all_count.tsv
+rm *.tmp
+mv Other_all_count.tsv /media/wolf2/TeamBerendsen/Pim/Hpa_metagenomes_analysis
+#########
+#######
+#####
+###
+#all outputs merged in excel afterwards, signal-to-noise ratios calculated in excel
+#Counts excel file provided in https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data/Hpa_Core_and_other_in_Asai2018_Baxter2010_counts.xlsx
+###
+#for all isolates used to probe metagenomes
+#take all WGS genomes for Hpa-associated isolates with same ASV, Make ANI heatmap to determine redundancy
+#put genomes in /media/wolf2
+cd /media/wolf2/TeamBerendsen/Pim/
+conda activate anvio-6.2
+#put TRACE assembly  in that folder as well
+average_nucleotide_identity.py -i Genomes_ASVsOfInterest -o ANIm_Genomes_ASVsOfInterest -m ANIm -g
+#########
+#######
+#####
+###
+#assembly of Xanthomonas a0e1a from Sanger reads in Baxter BAC library
+###
+#used more eloborate kallisto index (incl more Xanthomonas genomes, Arabidopsis genome, Hpa genome, and Albugo genome)
+#to increase confidence in specificity of reads mapped to Xanthomonas a0e1a genome
+cd /media/vol3/pim/
+mkdir non_redundant_Xanthomonas_genomes
+cd non_redundant_Xanthomonas_genomes
+mkdir Xanthomonas_genomes
+mkdir bacsort_dir
+cd bacsort_dir
+##install bacsort
+#git clone https://github.com/rrwick/Bacsort
+#export PATH=$(pwd)/Bacsort/scripts:"$PATH"
+## install appdirs
+#/media/vol3/pim/non_redundant_Xanthomonas_genomes/bacsort_dir
+#pip3 install appdirs
+cd /media/vol3/pim/non_redundant_Xanthomonas_genomes/Xanthomonas_genomes
+mkdir bacsort_results
+cd bacsort_results
+download_genomes.sh "Xanthomonas"
+cluster_genera.py assemblies
+#added LC_LB_21.fna.gz to clusters folder
+cp /media/bigdata-roeland/Pim/Hpa_resequencing_Asai_2018/benchmarking/Xanthomonas_genomes/LC_LB_21.fna.gz /media/vol3/pim/non_redundant_Xanthomonas_genomes/Xanthomonas_genomes/bacsort_results/clusters
+#changed LC_LB_21.fna.gz to Xanthomonas_251.fna.gz
+mash_distance_matrix.sh 10
+#####
+#now make kallisto index with non-redundant Xanthomonas Genomes, Hpa genome, Albugo laibachii genome, and Arabidopsis thaliana genome
+#put Albugo genome in /media/bigdata-roeland/Pim/Hpa_resequencing_Asai_2018/benchmarking/Xanthomonas_genomes/Additional_genomes
+#All (non-Xanthomonas) genomes except from Albugo are available in /media/bigdata-roeland/Pim/Hpa_resequencing_Asai_2018/benchmarking/Xanthomonas_genomes/Additional_genomes
+#download Albugo laibachii genome to that folder as well
+cd /media/bigdata-roeland/Pim/Hpa_resequencing_Asai_2018/benchmarking/Xanthomonas_genomes/Additional_genomes
+wget ftp://ftp.ensemblgenomes.org:21/pub/protists/release-47/fasta/albugo_laibachii/dna/*.fa.gz
+mkdir Albugo
+mv *.fa.gz Albugo
+cd Albugo
+#only use the dna toplevel file  (these are not masked, repeats and low-complexity regions are as is)
+#put this one in /media/bigdata-roeland/Pim/Hpa_resequencing_Asai_2018/benchmarking/Xanthomonas_genomes/Additional_genomes
+cd /media/bigdata-roeland/Pim/Hpa_resequencing_Asai_2018/benchmarking/Xanthomonas_genomes/Additional_genomes
+mkdir Hpa
+cd Hpa
+wget ftp://ftp.ensemblgenomes.org/pub/protists/release-47/fasta/hyaloperonospora_arabidopsidis/dna/*.fa.gz
+#copy to /media/vol3/pim/non_redundant_Xanthomonas_genomes/Xanthomonas_genomes/bacsort_results/clusters
+cp *.gz /media/vol3/pim/non_redundant_Xanthomonas_genomes/Xanthomonas_genomes/bacsort_results/clusters
+cd /media/vol3/pim/non_redundant_Xanthomonas_genomes/Xanthomonas_genomes/bacsort_results/clusters
+#renamed added genomes to match others (appendix = .fna.gz)
+#now concatenate all contigs within all genomes
+for fname in *.gz
+do
+ f=">${fname%.gz}"
+ zcat "$fname" | grep -v ">" | tr -d '\n' | sed "1s/^/$f\n/" | sed -e '$a\' | gzip >"${fname%.gz}.2.gz"
+ # do something on $f
+done
+mkdir concatenated_genomes
+mv *.2.gz concatenated_genomes
+cd concatenated_genomes
+kallisto index -i Kallisto_nonRedundantXanthomonasGenomes_a0e1a_Arabidopsis_Albugo_Hpa_20200722_index *.fna.2.gz
+##now quantify Xanthomonads in the data using kallisto and the non-redundant Xanthomonas index (non-redundancy as determined with bacsort)
+kallisto quant -i /media/vol3/pim/non_redundant_Xanthomonas_genomes/Xanthomonas_genomes/bacsort_results/clusters/concatenated_genomes/Kallisto_nonRedundantXanthomonasGenomes_a0e1a_Arabidopsis_Albugo_Hpa_20200722_index \
+  --single \
+  -l 620 \
+  -s 20 \
+  --pseudobam \
+  -b 16\
+  -o /media/vol3/pim/Hpa_TRACE/Kallisto_Hpa_TRACE_nonRedundantXanthomonasGenomes_a0e1a_Arabidopsis_Albugo_Hpa_20200722_index \
+  -t 16 \
+  /media/vol3/pim/Hpa_TRACE/fasta_hyaloperonospora_parasitica_highPhred_fixed_2.fq.gz
+#Extract reads mapped to LC_LB_21
+cd /media/vol3/pim/Hpa_TRACE/Kallisto_Hpa_TRACE_nonRedundantXanthomonasGenomes_a0e1a_Arabidopsis_Albugo_Hpa_20200722_index
+samtools view -b -F 4 pseudoalignments.bam > mapped.bam
+samtools view mapped.bam | wc -l
+samtools view mapped.bam | grep 'Xanthomonas_251' > mapped_on_LC_LB_21
+mkdir Mapped_on_LC_LB_21
+mv mapped_on_LC_LB_21 Mapped_on_LC_LB_21
+cd Mapped_on_LC_LB_21
+cut -f 1 mapped_on_LC_LB_21 > readnames_mapped_on_LC_LB_21
+mv readnames_mapped_on_LC_LB_21 \
+  /media/vol3/pim/Hpa_TRACE/
+cd /media/vol3/pim/Hpa_TRACE/
+zcat fasta_hyaloperonospora_parasitica_highPhred_fixed_2.fq.gz \
+  | grep -A 3 -F -f readnames_mapped_on_LC_LB_21 \
+  > fasta_hyaloperonospora_parasitica_highPhred_fixed_2_mapped_on_LC_LB_21.fq
+gzip fasta_hyaloperonospora_parasitica_highPhred_fixed_2_mapped_on_LC_LB_21.fq
+#remove '--' lines from fasta_hyaloperonospora_parasitica_highPhred_fixed_2_mapped_on_LC_LB_21.fq.gz
+zcat fasta_hyaloperonospora_parasitica_highPhred_fixed_2_mapped_on_LC_LB_21.fq.gz \
+  | grep -v '\-\-' > fasta_hyaloperonospora_parasitica_highPhred_fixed_2_mapped_on_LC_LB_21_linesRemoved.fq
+gzip fasta_hyaloperonospora_parasitica_highPhred_fixed_2_mapped_on_LC_LB_21_linesRemoved.fq #provided on github in https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data
+####
+#assemble genome (bits) in galaxy based on extracted reads (unicycler default params)
+#resulting assembly also provided on https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data
