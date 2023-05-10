@@ -6,6 +6,7 @@
 #####
 #download Metagenomes from Asai 2018 paper
 #data for six isolates, with long (75 or 60bp) and short reads (35 bp)
+#ftp lists can be found in https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_3/Data
 cd /media/vol3/pim/
 mkdir Asai_2018
 cd Asai_2018
