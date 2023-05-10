@@ -1,0 +1,309 @@
+####################
+##########
+#All code below is precisely as was performed for amplicon sequencing data analysis and is presented to provide insight into which parameters were employed.
+#most of the crucial parameters are also indicated in the materials & methods section of the paper 'Congruent downy mildew-associated microbiomes reduce plant disease and function as transferable resistobiomes'.
+#
+####################
+##########
+#Towards Fig. 1
+#
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path fastqs \
+  --source-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path At_Hpa_Gen-Exp_all_demux-paired-end.qza
+#DADA2
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs At_Hpa_Gen-Exp_all_demux-paired-end.qza \
+  --o-table At_Hpa_Gen-Exp_all_feature_table \
+  --o-representative-sequences At_Hpa_Gen-Exp_all_rep-seqs \
+  --p-trunc-len-f 300 \
+  --p-trunc-len-r 189 \
+  --p-trim-left-f 17 \
+  --p-trim-left-r 21 \
+  --p-n-threads 0
+#For taxonomic assignment, used QIIME compatible 132 release, 99% clustering identity, 7-level RDP-compatible consensus taxonomies
+#V3V4 extracted from fasta using primers sequences: CCTACGGGNGGCWGCAG (fw), GACTACHVGGGTATCTAATCC (rv)
+qiime feature-classifier classify-consensus-vsearch \
+  --i-query At_Hpa_Gen-Exp_all_rep-seqs.qza \
+  --i-reference-reads 99_otus_16S_V3V4.qza \
+  --i-reference-taxonomy ref-taxonomy.qza \
+  --p-threads 0 \
+  --o-classification all_rep-seqs_assigned_taxonomy
+#filter out Arabidopsis reads and unassigned
+# filter out D_4__Mitochondria,D_2__Chloroplast,Unassigned
+qiime taxa filter-table \
+  --i-table At_Hpa_Genotype_exp_NoAxenic.qza \
+  --i-taxonomy all_rep-seqs_assigned_taxonomy.qza \
+  --p-exclude D_4__Mitochondria,D_2__Chloroplast,Unassigned \
+  --o-filtered-table basal_feature_table
+#####filter out C24mock3, has only 233 reads.
+qiime feature-table filter-samples \
+  --i-table basal_feature_table.qza \
+  --m-metadata-file metadata_Exp1.txt \
+  --p-where "Sample='C24mock3'" \
+  --p-exclude-ids \
+  --o-filtered-table Exp1_ASV_table
+#make new taxonomy file based on this table
+qiime feature-classifier classify-consensus-vsearch \
+  --i-query Exp1_ASV_table_rep_seqs.qza \
+  --i-reference-reads 99_otus_16S_V3V4.qza \
+  --i-reference-taxonomy ref-taxonomy.qza \
+  --p-threads 0 \
+  --o-classification Exp1_ASV_table_rep_seqs_assigned_taxonomy
+#export biom
+qiime tools export \
+  --input-path Exp1_ASV_table.qza \
+  --output-path Exp1_ASV_table
+#convert to txt
+biom convert -i Exp1_ASV_table.biom -o Exp1_ASV_table.txt --to-tsv
+#generate ASV cumulative percentages in excel to identify lowest 1% abundance cut-off
+#cut-off is at 107 reads/ASV, 454 out of 2091 ASVs remain in set
+qiime feature-table filter-features \
+  --i-table Exp1_ASV_table.qza \
+  --p-min-frequency 107 \
+  --o-filtered-table Exp1_ASV_table_min107
+qiime feature-table filter-seqs \
+  --i-data basal_feature_table_rep-seqs.qza \
+  --i-table  Exp1_ASV_table_min107.qza \
+  --o-filtered-data Exp1_ASV_table_min107_rep_seqs
+#make new taxonomy file based on this table
+qiime feature-classifier classify-consensus-vsearch \
+  --i-query Exp1_ASV_table_min107_rep_seqs.qza \
+  --i-reference-reads 99_otus_16S_V3V4.qza \
+  --i-reference-taxonomy ref-taxonomy.qza \
+  --p-threads 0 \
+  --o-classification Exp1_ASV_table_min107_rep_seqs_assigned_taxonomy
+#export biom
+qiime tools export \
+  --input-path Exp1_ASV_table_min107.qza \
+  --output-path Exp1_ASV_table_min107
+#export taxonomies
+qiime tools export \
+  --input-path Exp1_ASV_table_min107_rep_seqs_assigned_taxonomy.qza \
+  --output-path Exp1_ASV_table_min107_rep_seqs_assigned_taxonomy
+#convert biom to txt
+biom convert -i Exp1_ASV_table.biom -o Exp1_ASV_table.txt --to-tsv
+#merge ASV table with taxonomies in excel, column name = 'taxonomy', added as final column in ASV table
+#save ASV table including taxonomies to Exp1_ASV_table_top99percent_incl_tax.txt and convert to .biom
+biom convert -i Exp1_ASV_table_top99percent_incl_tax.txt -o Exp1_ASV_table_top99percent_incl_tax.biom --to-hdf5 --table-type="OTU table" --process-obs-metadata taxonomy
+###
+#in R, version 4.0.3, (also functional with version 4.2.0)
+library(phyloseq)
+library(ggplot2)
+library(ggpubr)
+library(vegan)
+library(DESeq2)
+library(dplyr)
+library(pairwiseAdonis)
+theme_set(theme_bw())
+metadata <- import_qiime_sample_data("metadata_Exp1.txt")
+ASV_table <- import_biom(BIOMfilename = "Exp1_ASV_table_top99percent_incl_tax.biom")
+ASV_table_meta <- merge_phyloseq(ASV_table, metadata)
+colnames(tax_table(ASV_table_meta)) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
+#transform to relative abundances, then go for PCoA
+ASV_table_meta_relative = transform_sample_counts(ASV_table_meta, function(x) x/sum(x))
+ASV_table_meta_relative.ord <- ordinate(ASV_table_meta_relative, "PCoA", "bray") #unweighted jaccard requires binary=TRUE
+ASV_table_meta_relative_bray_PCoA_1 = plot_ordination(ASV_table_meta_relative, ASV_table_meta_relative.ord, type="samples", color="Treatment", shape="Accession") #, shape="Generation") #, axes = 2:3)
+#print(ASV_table_meta_relative_bray_PCoA_1) # not formatted yet
+########
+#Fig.1B
+########
+#	#0000FF = blue
+#	#FF0000 = red
+#	#FF9900 = orange
+#	#00FF00 = green
+ASV_table_meta_relative_bray_PCoA_2 <- ASV_table_meta_relative_bray_PCoA_1 + 
+  theme(legend.position = "none",
+  axis.title.y=element_text(size=10),
+  axis.title.x=element_text(size=10),
+  axis.text.y=element_text(size=10),
+  axis.text.x=element_text(size=10)) + 
+  scale_color_manual(values=c("Cala2" = "#00FF00", "Noco2" = "#FF9900", "Mix" = "#FF0000", "Mock" = "#0000FF")) +
+  geom_point(alpha=0.5) #+
+print(ASV_table_meta_relative_bray_PCoA_2)
+#ggsave(file="UU_Bray_PCoA.svg", plot=ASV_table_meta_relative_bray_PCoA_2, width=3.5, height=2)
+####################
+##########
+#run DESeq2 on counts table
+#Noco2, Cala2, and mix vs mock
+Noco2_mock = subset_samples(ASV_table_meta, Treatment == "Noco2" | Treatment == "Mock")
+Cala2_mock = subset_samples(ASV_table_meta, Treatment == "Cala2" | Treatment == "Mock")
+mix_mock = subset_samples(ASV_table_meta, Treatment == "Mix" | Treatment == "Mock")
+#Noco2 first
+DESeq2_Noco2_mock = phyloseq_to_deseq2(Noco2_mock, ~Treatment)
+## work around for error: every gene contains at least one zero, cannot compute log geometric means
+# calculate geometric means prior to estimate size factors
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
+geoMeans = apply(counts(DESeq2_Noco2_mock), 1, gm_mean)
+DESeq2_Noco2_mock = estimateSizeFactors(DESeq2_Noco2_mock, geoMeans = geoMeans)
+DESeq2_Noco2_mock = DESeq(DESeq2_Noco2_mock, fitType="local")
+#shrink log fold changes
+resultsNames(DESeq2_Noco2_mock)
+resLFC_Noco2_mock <- lfcShrink(DESeq2_Noco2_mock, coef="Treatment_Noco2_vs_Mock")
+alpha = 0.05
+sigtab_Noco2_mock = resLFC_Noco2_mock[which(resLFC_Noco2_mock$padj < alpha), ]
+sigtab_Noco2_mock = cbind(as(sigtab_Noco2_mock, "data.frame"), as(tax_table(Noco2_mock)[rownames(sigtab_Noco2_mock), ], "matrix"))
+#write.csv(sigtab_Noco2_mock, file = "sigtab_Noco2_mock.csv")
+###
+#Cala2
+DESeq2_Cala2_mock = phyloseq_to_deseq2(Cala2_mock, ~Treatment)
+## work around for error: every gene contains at least one zero, cannot compute log geometric means
+# calculate geometric means prior to estimate size factors
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
+geoMeans = apply(counts(DESeq2_Cala2_mock), 1, gm_mean)
+DESeq2_Cala2_mock = estimateSizeFactors(DESeq2_Cala2_mock, geoMeans = geoMeans)
+DESeq2_Cala2_mock = DESeq(DESeq2_Cala2_mock, fitType="local")
+#shrink log fold changes
+resultsNames(DESeq2_Cala2_mock)
+resLFC_Cala2_mock <- lfcShrink(DESeq2_Cala2_mock, coef="Treatment_Mock_vs_Cala2")
+alpha = 0.05
+sigtab_Cala2_mock = resLFC_Cala2_mock[which(resLFC_Cala2_mock$padj < alpha), ]
+sigtab_Cala2_mock = cbind(as(sigtab_Cala2_mock, "data.frame"), as(tax_table(Cala2_mock)[rownames(sigtab_Cala2_mock), ], "matrix"))
+#write.csv(sigtab_Cala2_mock, file = "sigtab_Cala2_mock.csv")
+###
+#mix
+DESeq2_mix_mock = phyloseq_to_deseq2(mix_mock, ~Treatment)
+## work around for error: every gene contains at least one zero, cannot compute log geometric means
+# calculate geometric means prior to estimate size factors
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
+geoMeans = apply(counts(DESeq2_mix_mock), 1, gm_mean)
+DESeq2_mix_mock = estimateSizeFactors(DESeq2_mix_mock, geoMeans = geoMeans)
+DESeq2_mix_mock = DESeq(DESeq2_mix_mock, fitType="local")
+#shrink log fold changes
+resultsNames(DESeq2_mix_mock)
+resLFC_mix_mock <- lfcShrink(DESeq2_mix_mock, coef="Treatment_Mock_vs_Mix")
+alpha = 0.05
+sigtab_mix_mock = resLFC_mix_mock[which(resLFC_mix_mock$padj < alpha), ]
+sigtab_mix_mock = cbind(as(sigtab_mix_mock, "data.frame"), as(tax_table(mix_mock)[rownames(sigtab_mix_mock), ], "matrix"))
+#write.csv(sigtab_mix_mock, file = "sigtab_mix_mock.csv")
+######
+#Fig.1C and 1D --> results from the 3 sigtab files created above were used as a basis for the generation of Venn diagrams
+#Venn .svg files generated with webtool (https://bioinformatics.psb.ugent.be/webtools/Venn/), adjusted colors in Illustrator.
+####################
+##########
+#towards stacked barcharts (Fig. 1E and Fig. 1F)
+#Lists from the Venn diagrams were used to annotate ASVs to whether they were 
+#  Enriched in Noco2 vs mock ('Noco2'), 
+#  Enriched in Cala2 vs mock ('Cala2'), 
+#  Enriched in both Noco2 and Cala2 vs mock ('Enriched'),
+#  Depleted in both Noco2 and Cala2 vs mock ('Both_depleted'),
+#  Depleted in Noco2 or Cala2 ('Other_depleted')
+Long_ASV_table_meta_relative <- ASV_table_meta_relative %>%
+  psmelt() # Melt to long format
+#add column based on overlap in enriched/depleted in all Hpa samples (DESeq2 output)
+overlap <- read.table("ASV_list_core_Hpa_enriched_and_depleted_all2.txt", header = TRUE)
+Long_ASV_table_meta_relative_3 <- left_join(Long_ASV_table_meta_relative, overlap, by = "OTU")
+#replace <NA> with Other
+Long_ASV_table_meta_relative_3$Status_in_Hpa_inoculated[is.na(Long_ASV_table_meta_relative_3$Status_in_Hpa_inoculated)] <- "Other"
+long_ASV_table_meta_relative_2_melt <- Long_ASV_table_meta_relative_3 %>%
+  group_by(OTU, Treatment, Status_in_Hpa_inoculated) %>%
+  summarise(mean_abundance = mean(Abundance)) %>%
+  group_by(Treatment, Status_in_Hpa_inoculated) %>%
+  summarise(mean_abundance_2 = sum(mean_abundance))
+#order rows based on Status_in_Hpa_inoculated column
+Long_ASV_table_meta_relative_4 <- long_ASV_table_meta_relative_2_melt[order(long_ASV_table_meta_relative_2_melt$Status_in_Hpa_inoculated),]
+#convert proportions to percentages
+Long_ASV_table_meta_relative_4$mean_abundance_2 <- Long_ASV_table_meta_relative_4$mean_abundance_2 * 100
+Long_ASV_table_meta_relative_4$Treatment <- factor(Long_ASV_table_meta_relative_4$Treatment, levels = c('Mock', 'Noco2', 'Cala2', 'Mix'))
+Long_ASV_table_meta_relative_4$Status_in_Hpa_inoculated <- factor(Long_ASV_table_meta_relative_4$Status_in_Hpa_inoculated, levels = c('Enriched', 'Noco2', 'Cala2', 'Other', 'Other_depleted', 'Both_depleted'))
+####################
+##########
+#Fig. 1E
+stacked_barplot <- ggplot(Long_ASV_table_meta_relative_4, aes(x = Treatment, y = mean_abundance_2, fill = Status_in_Hpa_inoculated)) + 
+  scale_y_continuous(name = "Abundance (%)") +
+  geom_bar(stat = "identity", color = '#333333') +
+  scale_fill_manual(values = c("Cala2" = "#00FF00", "Noco2" = "#FF9900", "Enriched" = "#FF0000", "Both_depleted" = "#0000FF", "Other_depleted" = "#33CCFF", "Other" = "#FAF9F6")) +
+  theme(axis.title.x = element_blank(),
+  axis.text.x = element_text(size = 10, angle = 90, hjust = 1),
+  legend.position = "none",
+  axis.text.y = element_text(size = 10, angle = 90),
+  axis.title.y = element_text(size = 10))
+print(stacked_barplot)
+#ggsave(file="Stacked_barchart_UU_Samples_Noco2Cala2AndBlueShades.svg", plot=stacked_barplot, width=2.25, height=4.5)
+#ggsave(file="Stacked_barchart_UU_Samples_Noco2Cala2AndBlueShades_smaller.svg", plot=stacked_barplot, width=1.5, height=4.5)
+####################
+##########
+Long_ASV_table_meta_relative <- ASV_table_meta_relative %>%
+  psmelt() # Melt to long format
+Long_ASV_table_meta_relative$Abundance <- Long_ASV_table_meta_relative$Abundance * 100
+#add column based on overlap in enriched/depleted in all Hpa samples (DESeq2 output)
+overlap <- read.table("ASV_list_core_Hpa_enriched_Tax2.txt", header = TRUE)
+Long_ASV_table_meta_relative_3 <- left_join(Long_ASV_table_meta_relative, overlap, by = "OTU")
+#replace <NA> with Other
+Long_ASV_table_meta_relative_3$Taxonomy[is.na(Long_ASV_table_meta_relative_3$Taxonomy)] <- "Other"
+Long_ASV_table_meta_relative_3$Status_in_Hpa_inoculated[is.na(Long_ASV_table_meta_relative_3$Status_in_Hpa_inoculated)] <- "Other"
+long_ASV_table_meta_relative_2_melt <- Long_ASV_table_meta_relative_3 %>%
+  group_by(OTU, Treatment, Taxonomy, Status_in_Hpa_inoculated) %>%
+  summarise(mean_abundance = mean(Abundance))
+#order rows based on Status_in_Hpa_inoculated column
+Enriched <- subset(long_ASV_table_meta_relative_2_melt, Status_in_Hpa_inoculated == "Enriched")
+Enriched <- Enriched[order(-Enriched$mean_abundance),]
+Other <- subset(long_ASV_table_meta_relative_2_melt, Status_in_Hpa_inoculated != "Enriched")
+other_melt <- Other %>%
+  group_by(Treatment, Taxonomy, Status_in_Hpa_inoculated) %>%
+  summarise(mean_abundance = sum(mean_abundance))
+long_ASV_table_meta_relative_3_melt <- rbind(Enriched, other_melt)
+long_ASV_table_meta_relative_3_melt$OTU[is.na(long_ASV_table_meta_relative_3_melt$OTU)] <- "Other"
+long_ASV_table_meta_relative_3_melt$Taxonomy[is.na(long_ASV_table_meta_relative_3_melt$Taxonomy)] <- "Other"
+Long_ASV_table_meta_relative_4 <- long_ASV_table_meta_relative_3_melt
+Long_ASV_table_meta_relative_4$Treatment <- factor(Long_ASV_table_meta_relative_4$Treatment, levels = c('Mock', 'Noco2', 'Cala2', 'Mix'))
+Long_ASV_table_meta_relative_4$Status_in_Hpa_inoculated <- factor(Long_ASV_table_meta_relative_4$Status_in_Hpa_inoculated, levels = c('Enriched', 'Other'))
+Long_ASV_table_meta_relative_4$Taxonomy <- factor(Long_ASV_table_meta_relative_4$Taxonomy, levels = c(
+"Xanthomonas",
+"Stenotrophomonas",
+"Sphingomonas",
+"Sphingobium",
+"Sphingobacterium",
+"Pseudomonas",
+"Plantibacter",
+"Novosphingobium",
+"Methylophilus",
+"Comamonadaceae",
+"Chryseobacterium",
+"Brevundimonas",
+"Arthrobacter",
+"Aeromicrobium",
+"Acidovorax",
+"Other")
+)
+taxColors <- c(
+"Acidovorax"="#F8766D",
+"Aeromicrobium"="#E68613",
+"Arthrobacter"="#CD9600",
+"Brevundimonas"="#ABA300",
+"Chryseobacterium"="#7CAE00",
+"Comamonadaceae"="#00B81F",
+"Methylophilus"="#00BFC4",
+"Novosphingobium"="#00BBDB",
+"Plantibacter"="#529EFF",
+"Pseudomonas"="#FC717F",
+"Sphingobacterium"="#00BF7D",
+"Sphingobium"="#8494FF",
+"Sphingomonas"="#AC88FF",
+"Stenotrophomonas"="#ED68ED",
+"Xanthomonas"="#FF68A1",
+"Other"="#FAF9F6"
+)
+stacked_barplot <- ggplot(Long_ASV_table_meta_relative_4, aes(x = Treatment, y = mean_abundance, fill = Taxonomy))+ # fill = reorder(Taxonomy, mean_abundance)
+  #facet_grid(Type~Treatment) +
+  scale_y_continuous(name = "Abundance (%)") +
+  geom_bar(stat = "identity", color = '#333333') +
+  scale_fill_manual(values = taxColors) +
+  theme(axis.title.x = element_blank(),
+  axis.text.x = element_text(size = 10, angle = 90, hjust = 1),
+  legend.position = "none",
+  axis.text.y = element_text(size = 10, angle = 90),
+  axis.title.y = element_text(size = 10)) +
+  guides(fill = guide_legend(reverse = TRUE))
+  print(stacked_barplot)
+ggsave(file="Stacked_barchart_UU_Samples_tax.svg", plot=stacked_barplot, width=1.5, height=4.5)
+####
+#rerun above without 'legend.position = 'none' to make figure with legend. Used legend-less version and legend version in illustrator to make nice figure)
+#ggsave(file="Stacked_barchart_UU_Samples_tax_legend.svg", plot=stacked_barplot, width=8, height=4.5)
