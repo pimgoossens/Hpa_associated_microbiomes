@@ -1,0 +1,410 @@
+####################
+##########
+#All code below is precisely as was performed for (amplicon sequencing) data analysis and is presented to provide insight into which parameters were employed.
+#most of the crucial parameters are also indicated in the materials & methods section of the paper 'Congruent downy mildew-associated microbiomes reduce plant disease and function as transferable resistobiomes'.
+#
+####################
+##########
+#Towards Fig. 2
+#ran cutadapt and DADA2 on fastqs divided over batches (equally distributing samples from all variables over all batches)
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path fastqs/cutadapt/batch_1 \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path Cologne_demux_paired_end_batch_1.qza
+##batch2
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path fastqs/cutadapt/batch_2 \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path Cologne_demux_paired_end_batch_2.qza
+##batch3
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path fastqs/cutadapt/batch_3 \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path Cologne_demux_paired_end_batch_3.qza
+###trim primers
+#
+qiime cutadapt trim-paired \
+  --i-demultiplexed-sequences Cologne_demux_paired_end_batch_1.qza \
+  --p-cores 6 \
+  --p-front-f CCTACGGGNGGCWGCAG \
+  --p-front-r GACTACHVGGGTATCTAATCC \
+  --p-discard-untrimmed \
+  --o-trimmed-sequences Cologne_demux_paired_end_batch_1_trimmed.qza \
+qiime cutadapt trim-paired \
+  --i-demultiplexed-sequences Cologne_demux_paired_end_batch_2.qza \
+  --p-cores 6 \
+  --p-front-f CCTACGGGNGGCWGCAG \
+  --p-front-r GACTACHVGGGTATCTAATCC \
+  --p-discard-untrimmed \
+  --o-trimmed-sequences Cologne_demux_paired_end_batch_2_trimmed.qza \
+qiime cutadapt trim-paired \
+  --i-demultiplexed-sequences Cologne_demux_paired_end_batch_3.qza \
+  --p-cores 6 \
+  --p-front-f CCTACGGGNGGCWGCAG \
+  --p-front-r GACTACHVGGGTATCTAATCC \
+  --p-discard-untrimmed \
+  --o-trimmed-sequences Cologne_demux_paired_end_batch_3_trimmed.qza \
+##DADA2 feature table en rep seq generation
+############ DADA2
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs Cologne_demux_paired_end_batch_1_trimmed.qza \
+  --o-table Cologne_batch_1_feature_table_maxee2 \
+  --o-representative-sequences Cologne_batch_1_rep_seqs_maxee2 \
+  --p-trunc-len-f 261 \
+  --p-trunc-len-r 210 \
+  --p-max-ee 2 \
+  --p-n-threads 0 \
+  --o-denoising-stats Cologne_denoise_batch1_maxee2 \
+  --verbose
+##batch2
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs Cologne_demux_paired_end_batch_2_trimmed.qza \
+  --o-table Cologne_batch_2_feature_table_maxee2 \
+  --o-representative-sequences Cologne_batch_2_rep_seqs_maxee2 \
+  --p-trunc-len-f 261 \
+  --p-trunc-len-r 210 \
+  --p-max-ee 2 \
+  --p-n-threads 0 \
+  --o-denoising-stats Cologne_denoise_batch2_maxee2 \
+  --verbose
+##batch3
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs Cologne_demux_paired_end_batch_3_trimmed.qza \
+  --o-table Cologne_batch_3_feature_table_maxee2 \
+  --o-representative-sequences Cologne_batch_3_rep_seqs_maxee2 \
+  --p-trunc-len-f 261 \
+  --p-trunc-len-r 210 \
+  --p-max-ee 2 \
+  --p-n-threads 0 \
+  --o-denoising-stats Cologne_denoise_batch3_maxee2 \
+  --verbose
+##merge tables and rep-seqs
+qiime feature-table merge \
+  --i-tables Cologne_batch_1_feature_table_maxee2.qza \
+  --i-tables Cologne_batch_2_feature_table_maxee2.qza \
+  --i-tables Cologne_batch_3_feature_table_maxee2.qza \
+  --o-merged-table Cologne_paired_end_all_feature_table
+##
+##merge all rep-seqs files
+qiime feature-table merge-seqs \
+  --i-data Cologne_batch_1_rep_seqs_maxee2.qza \
+  --i-data Cologne_batch_2_rep_seqs_maxee2.qza \
+  --i-data Cologne_batch_3_rep_seqs_maxee2.qza \
+  --o-merged-data Cologne_paired_end_all_rep_seqs
+##
+##assign taxonomies
+#For taxonomic assignment, used QIIME compatible 132 release, 99% clustering identity, 7-level RDP-compatible consensus taxonomies
+#V3V4 extracted from fasta using primers sequences: CCTACGGGNGGCWGCAG (fw), GACTACHVGGGTATCTAATCC (rv) 
+qiime feature-classifier classify-consensus-vsearch \
+  --i-query Cologne_paired_end_all_rep_seqs.qza \
+  --i-reference-reads 99_otus_16S_V3V4.qza \
+  --i-reference-taxonomy ref-taxonomy.qza \
+  --p-threads 0 \
+  --o-classification Cologne_paired_end_all_rep_seqs_assigned_taxonomy
+##filter out Arabidopsis reads and unassigned
+## filter out D_4__Mitochondria,D_2__Chloroplast,Unassigned
+qiime taxa filter-table \
+  --i-table Cologne_paired_end_all_feature_table.qza \
+  --i-taxonomy Cologne_paired_end_all_rep_seqs_assigned_taxonomy.qza \
+  --p-exclude D_4__Mitochondria,D_2__Chloroplast,Unassigned \
+  --o-filtered-table Cologne_paired_end_all_feature_table_NoNonsense
+##filter repseqs based on feature table
+#qiime feature-table filter-seqs \
+#  --i-data Cologne_paired_end_all_rep_seqs.qza \
+#  --i-table  Cologne_paired_end_all_feature_table_NoNonsense.qza \
+#  --o-filtered-data Cologne_paired_end_all_rep_seqs_NoNonsense
+#export Cologne_paired_end_all_feature_table_NoNonsense.qza to biom to txt and make ranked ASV cumulative abundance plot
+#identify lowest 1% ASVs cutoff
+#filter ASV table based on cutoff
+#reassign taxonomies
+#make ASV table with taxonomies in Excel
+#make biom
+#move to R
+biom convert -i Cologne_paired_end_all_feature_table_NoNonsense.biom -o Cologne_paired_end_all_feature_table_NoNonsense.txt --to-tsv
+#cutoff is at 199 reads/ASV total, 458 of 1533 ASV remain in set
+qiime feature-table filter-features \
+  --i-table Cologne_paired_end_all_feature_table_NoNonsense.qza \
+  --p-min-frequency 199 \
+  --o-filtered-table Cologne_paired_end_all_feature_table_NoNonsense_min199
+##filter repseqs based on feature table
+qiime feature-table filter-seqs \
+  --i-data Cologne_paired_end_all_rep_seqs_NoNonsense.qza \
+  --i-table  Cologne_paired_end_all_feature_table_NoNonsense_min199.qza \
+  --o-filtered-data Cologne_paired_end_all_rep_seqs_NoNonsense_min199
+##assign taxonomies
+qiime feature-classifier classify-consensus-vsearch \
+  --i-query Cologne_paired_end_all_rep_seqs_NoNonsense_min199.qza \
+  --i-reference-reads 99_otus_16S_V3V4.qza \
+  --i-reference-taxonomy ref-taxonomy.qza \
+  --p-threads 0 \
+  --o-classification Cologne_paired_end_all_rep_seqs_NoNonsense_min199_assigned_taxonomy
+#####
+#merged taxnomies with Cologne_paired_end_all_feature_table_NoNonsense_min199 in excel, make biom and import into R:phyloseq
+biom convert \
+  -i Cologne_paired_end_all_feature_table_NoNonsense_min199_w_tax.txt \
+  -o Cologne_paired_end_all_feature_table_NoNonsense_min199_w_tax.biom \
+  --to-hdf5 \
+  --table-type="OTU table" \
+  --process-obs-metadata taxonomy
+#differential abundance testing (DESeq2) performed on Cologne_paired_end_all_feature_table_NoNonsense_min199_w_tax.biom
+#did this before merging with Utrecht Fig1 amplicon sequencing data and combined analyses (PCoA, Venns, Stacked bar charts of Fig. 2)
+#R
+library(phyloseq)
+library(ggplot2)
+library(vegan)
+library(DESeq2)
+library(dplyr)
+library(ggpubr)
+theme_set(theme_bw())
+setwd("C:/Users/3378012/surfdrive/UU/Shared_Folder/Manuscript_outline/Second_try_September2019/MPIPZ/R")
+metadata <- import_qiime_sample_data("Cologne_metadata.txt")
+ASV_table <- import_biom(BIOMfilename = "Cologne_paired_end_all_feature_table_NoNonsense_min199_w_tax.biom")
+ASV_table_meta <- merge_phyloseq(ASV_table, metadata)
+colnames(tax_table(ASV_table_meta)) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
+#go for differential abundance testing with DESeq2
+#
+Noco2_mock = subset_samples(ASV_table_meta, Treatment == "Noco2" | Treatment == "Mock")
+Cala2_mock = subset_samples(ASV_table_meta, Treatment == "Cala2" | Treatment == "Mock")
+#Noco2 first
+DESeq2_Noco2_mock = phyloseq_to_deseq2(Noco2_mock, ~Treatment)
+## work around for error: every gene contains at least one zero, cannot compute log geometric means
+# calculate geometric means prior to estimate size factors
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
+geoMeans = apply(counts(DESeq2_Noco2_mock), 1, gm_mean)
+DESeq2_Noco2_mock = estimateSizeFactors(DESeq2_Noco2_mock, geoMeans = geoMeans)
+DESeq2_Noco2_mock = DESeq(DESeq2_Noco2_mock, fitType="local")
+#shrink log fold changes
+resultsNames(DESeq2_Noco2_mock)
+resLFC_Noco2_mock <- lfcShrink(DESeq2_Noco2_mock, coef="Treatment_Noco2_vs_Mock")
+###################################################################
+#adjusted alpha from 0.05 to 0.001 as mock and Hpa-inoculated samples are too different (200 out of 458 ASVs significanlty different), to correct for possible effect of violation of assumption of median-ratio normalization.
+alpha = 0.001
+sigtab_Noco2_mock = resLFC_Noco2_mock[which(resLFC_Noco2_mock$padj < alpha), ]
+sigtab_Noco2_mock = cbind(as(sigtab_Noco2_mock, "data.frame"), as(tax_table(Noco2_mock)[rownames(sigtab_Noco2_mock), ], "matrix"))
+head(sigtab_Noco2_mock)
+dim(sigtab_Noco2_mock)
+#write.csv(sigtab_Noco2_mock, file = "sigtab_Noco2_mock.csv")
+###
+#Cala2
+DESeq2_Cala2_mock = phyloseq_to_deseq2(Cala2_mock, ~Treatment)
+## work around for error: every gene contains at least one zero, cannot compute log geometric means
+# calculate geometric means prior to estimate size factors
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
+geoMeans = apply(counts(DESeq2_Cala2_mock), 1, gm_mean)
+DESeq2_Cala2_mock = estimateSizeFactors(DESeq2_Cala2_mock, geoMeans = geoMeans)
+DESeq2_Cala2_mock = DESeq(DESeq2_Cala2_mock, fitType="local")
+#shrink log fold changes
+resultsNames(DESeq2_Cala2_mock)
+resLFC_Cala2_mock <- lfcShrink(DESeq2_Cala2_mock, coef="Treatment_Mock_vs_Cala2")
+alpha = 0.001
+sigtab_Cala2_mock = resLFC_Cala2_mock[which(resLFC_Cala2_mock$padj < alpha), ]
+sigtab_Cala2_mock = cbind(as(sigtab_Cala2_mock, "data.frame"), as(tax_table(Cala2_mock)[rownames(sigtab_Cala2_mock), ], "matrix"))
+head(sigtab_Cala2_mock)
+dim(sigtab_Cala2_mock)
+#write.csv(sigtab_Cala2_mock, file = "sigtab_Cala2_mock.csv")
+#####
+#cross-referenced ASVs enriched in Hpa-treated samples with those observed as enriched in Utrecht samples (Fig. 1).
+#####
+#Fig. 2B
+#Venn .svg files generated with webtool (https://bioinformatics.psb.ugent.be/webtools/Venn/), adjusted colors in Illustrator.
+#####
+#now merge filterd ASV tables + repseqs from Utrecht and Cologne and go for remaining components of Fig. 2
+qiime feature-table merge \
+  --i-tables Exp1_ASV_table_min107.qza \
+  --i-tables Cologne_paired_end_all_feature_table_NoNonsense_min199.qza \
+  --o-merged-table MPIPZ_min199_UU_min107_ASV_table
+qiime feature-table merge-seqs \
+  --i-data Exp1_ASV_table_min107_rep_seqs.qza \
+  --i-data Cologne_paired_end_all_rep_seqs_NoNonsense_min199.qza \
+  --o-merged-data MPIPZ_min199_UU_min107_ASV_table_rep_seqs
+###
+#export ASV table, then convert to json as R:phyloseq needs that format when taxonomies are absent (apparently..)
+#export biom
+qiime tools export \
+  --input-path MPIPZ_min199_UU_min107_ASV_table.qza \
+  --output-path MPIPZ_min199_UU_min107_ASV_table
+biom convert -i MPIPZ_min199_UU_min107_ASV_table.biom -o MPIPZ_min199_UU_min107_ASV_table_json.biom --table-type="OTU table" --to-json
+####
+#Fig. 2A
+#Hpa UU MPIPZ PCoA
+library(phyloseq)
+library(ggplot2)
+library(ggpubr)
+library(vegan)
+library(dplyr)
+theme_set(theme_bw())
+metadata <- import_qiime_sample_data("UU_MPIPZ_metadata.txt")
+ASV_table <- import_biom(BIOMfilename = "MPIPZ_min199_UU_min107_ASV_table_json.biom") 
+ASV_table_meta <- merge_phyloseq(ASV_table, metadata)
+ASV_table_meta_relative = transform_sample_counts(ASV_table_meta, function(x) x/sum(x))
+No_mix_relative = subset_samples(ASV_table_meta_relative, Treatment != "Mix") #no mix-treatment performed at Cologne experiment, thus omitted from Fig 2 (all mix-treatment data is already in Fig. 1)
+No_mix_relative.ord <- ordinate(No_mix_relative, "PCoA", "bray") #unweighted jaccard requires binary=TRUE
+No_mix_relative.ord$Axis.1 <- No_mix_relative.ord$Axis.1 * -1
+No_mix_relative_bray_PCoA_1 = plot_ordination(No_mix_relative, No_mix_relative.ord, type="samples", color="Treatment", shape="Accession") #, shape="Generation") #, axes = 2:3)
+#Fig. 2A
+No_mix_relative_bray_PCoA_2 <- No_mix_relative_bray_PCoA_1 + 
+  theme(legend.position = "none",
+  axis.text.y=element_text(size = 10),
+  axis.text.x=element_text(size = 10),
+  axis.title.y=element_text(size = 10),
+  axis.title.x=element_text(size = 10)) + 
+  scale_color_manual(values=c("Cala2" = "#00FF00", "Noco2" = "#FF9900", "Mock" = "#0000FF")) +
+  geom_hline(yintercept=0, linetype="dashed", color = "grey", size=1) +
+  annotate(geom="text", x=-0.12, y=0.1, label="MPIPZ", color="grey", size = 4) +
+  annotate(geom="text", x=-0.12, y=-0.1, label="UU", color="grey", size = 4) +
+  geom_point(alpha=0.5) #+
+print(No_mix_relative_bray_PCoA_2)
+#ggsave(file="UU_MPIPZ_PCoA_bray_relative_otherColors2.svg", plot=No_mix_relative_bray_PCoA_2, width=3, height=2)
+####
+#towards stacked barchart Fig. 2C
+######
+#stacked chart UU MPIPZ overlap
+##
+long_ASV_table_meta_relative <- No_mix_relative %>%
+  psmelt() # Melt to long format
+long_ASV_table_meta_relative$Abundance = long_ASV_table_meta_relative$Abundance * 100
+#add column based on overlap in enriched in all Hpa samples (DESeq2 output, ASVs annotated with enriched in 2, 3 or 4 cultures)
+overlap <- read.table("Enriched_annotated.txt", header = TRUE, sep = "\t")
+long_ASV_table_meta_relative_2 <- left_join(long_ASV_table_meta_relative, overlap, by = "OTU")
+long_ASV_table_meta_relative_2$Observed_in_3[is.na(long_ASV_table_meta_relative_2$Observed_in_3)] <- "Other"
+long_ASV_table_meta_relative_2_melt <- long_ASV_table_meta_relative_2 %>%
+  group_by(OTU, Location, Treatment, Observed_in_3) %>%
+  summarise(mean_abundance = mean(Abundance)) %>%
+  group_by(Location, Treatment, Observed_in_3) %>%
+  summarise(mean_abundance_2 = sum(mean_abundance))
+long_ASV_table_meta_relative_2_melt$Observed_in_3 <- factor(long_ASV_table_meta_relative_2_melt$Observed_in_3, levels = c('Other', 'min2', 'min3', 'All'))
+long_ASV_table_meta_relative_2_melt$Location <- factor(long_ASV_table_meta_relative_2_melt$Location, levels = c('UU', 'MPIPZ'))
+long_ASV_table_meta_relative_2_melt$Treatment <- factor(long_ASV_table_meta_relative_2_melt$Treatment, levels = c('Mock', 'Noco2', 'Cala2'))
+####
+#Fig. 2C
+stacked_barplot <- ggplot(long_ASV_table_meta_relative_2_melt, aes(x = Treatment, y = mean_abundance_2, fill = Observed_in_3)) + 
+  facet_grid( ~ Location, scales = "free", space = "free") +
+  geom_bar(stat = "identity", color = '#333333') +
+  scale_y_continuous(name = "Abundance (%)") +
+  scale_fill_manual(values = c(All='red', min3='deeppink', min2='pink', Other = "white")) + #deeppink = #FF1493, pink = #FFC0CB
+  theme(axis.title.x = element_blank(),
+  legend.position='none',
+  strip.text.x = element_text(size = 10),
+  axis.ticks.x=element_blank(),
+  axis.text.x=element_text(size=10, angle = 30),
+  axis.title.y=element_text(size=10),
+  axis.text.y=element_text(size=10, angle = 30))
+print(stacked_barplot)
+#ggsave(file="Stacked_barchart_enriched_in_at_allCultures_4ASVs_red_min3_deeppink_min2_pink.svg", plot=stacked_barplot, width=3, height=1.8)
+####
+#Make dendrogram of ASVs that were enriched in at least 2/4 cultures, list stored in ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap.txt
+#filter merged rep_seqs based on ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap.txt
+qiime feature-table filter-features \
+  --i-table MPIPZ_min199_UU_min107_ASV_table.qza \
+  --m-metadata-file  ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap.txt \
+  --o-filtered-table ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap
+#filter rep seqs based on this file
+qiime feature-table filter-seqs \
+  --i-data MPIPZ_min199_UU_min107_ASV_table_rep_seqs.qza \
+  --i-table  ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap.qza \
+  --o-filtered-data ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs
+#align rep seqs
+qiime alignment mafft \
+  --i-sequences ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs.qza \
+  --p-n-threads 0 \
+  --o-alignment ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned
+#mask alignment
+qiime alignment mask \
+  --i-alignment ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned.qza \
+  --o-masked-alignment  ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned_masked
+#make phylosgenetic tree
+qiime phylogeny fasttree \
+  --i-alignment ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned_masked.qza \
+  --o-tree ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned_masked_unrootedtree.qza
+#root the tree using the longest root
+qiime phylogeny midpoint-root \
+  --i-tree ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned_masked_unrootedtree.qza \
+  --o-rooted-tree ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned_masked_rootedtree.qza
+#export final dendrogram
+qiime tools export \
+  --input-path ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned_masked_rootedtree.qza \
+  --output-path ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned_masked_rootedtree #renamed .nwk in resulting file to filename (ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned_masked_rootedtree.nwk)
+####
+#Fig. 2D
+#Visulaized dendrogram in itol webtool (https://itol.embl.de/)
+#used annotation files:
+#itol_UU_MPIPZ_Class_strip_colors
+#itol_UU_MPIPZ_overlap_colors
+#itol_UU_MPIPZ_overlap_labelnames
+####
+#
+#####
+#Fig. 2E
+#Barplots showing only 4 overlapping ASVs UU MPIPZ, 
+#####
+setwd("C:/Users/3378012/surfdrive/UU/Shared_Folder/Manuscript_outline/Second_try_September2019")
+table <- read.table("Enriched_ASVs_Noco2_Cala2_UU_MPIPZ.txt", header = TRUE, sep = "\t")
+table <- read.table("Enriched_ASVs_Noco2_Cala2_UU_MPIPZ_inclProC24.txt", header = TRUE, sep = "\t")
+theme_set(theme_bw())
+table$Treatment <- factor(table$Treatment, levels = c('Mock', 'Noco2', 'Cala2'))
+table$Location <- factor(table$Location, levels = c('UU', 'MPIPZ'))
+library(gridExtra)
+Xanthomonas <- ggbarplot(table, x = "Treatment", y = "Xanthomonas", fill = "Location", 
+       add = "mean_se", add.params = list(group = "Location"),
+       position = position_dodge(0.8)) +
+	   scale_y_continuous(name = "Abundance (%)") +
+	   coord_cartesian(ylim=c(0,10)) +
+	   scale_fill_manual(values=c(UU = "red", MPIPZ = "#CC0033")) +
+	   ggtitle("Xanthomonas a0e1a") +
+	   theme(legend.position = 'none',
+	   axis.title.x=element_blank(),
+	   axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
+	   axis.title.y=element_blank(),
+	   axis.text.y=element_text(size = 10),
+	   plot.title = element_text(hjust = 0.5, size = 10))
+print(Xanthomonas)
+Comamonadaceae <- ggbarplot(table, x = "Treatment", y = "Comamonadaceae", fill = "Location", 
+       add = "mean_se", add.params = list(group = "Location"),
+       position = position_dodge(0.8)) +
+	   coord_cartesian(ylim=c(0,10)) +
+	   scale_fill_manual(values=c(UU = "red", MPIPZ = "#CC0033")) +
+	   ggtitle("Acidovorax a4065") +
+	   theme(legend.position = 'none', 
+	   axis.title.x=element_blank(),
+	   axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
+	   axis.title.y=element_blank(),
+	   axis.text.y=element_text(size = 10),
+	   plot.title = element_text(hjust = 0.5, size = 10))
+print(Comamonadaceae)
+Arthrobacter <- ggbarplot(table, x = "Treatment", y = "Arthrobacter", fill = "Location", 
+       add = "mean_se", add.params = list(group = "Location"),
+       position = position_dodge(0.8)) +
+	   scale_y_continuous(name = "Abundance (%)") +
+	   coord_cartesian(ylim=c(0,10)) +
+	   scale_fill_manual(values=c(UU = "red", MPIPZ = "#CC0033")) +
+	   ggtitle("Arthrobacter 42fbd") +
+	   theme(legend.position = 'none',
+	   axis.title.x=element_blank(),
+	   axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
+	   axis.title.y=element_blank(),
+	   axis.text.y=element_text(size = 10),
+	   plot.title = element_text(hjust = 0.5, size = 10))
+print(Arthrobacter)
+Sphingobium <- ggbarplot(table, x = "Treatment", y = "Sphingobium", fill = "Location", 
+       add = "mean_se", add.params = list(group = "Location"),
+       position = position_dodge(0.8)) +
+	   scale_y_continuous(name = "Abundance (%)") +
+	   coord_cartesian(ylim=c(0,10)) +
+	   scale_fill_manual(values=c(UU = "red", MPIPZ = "#CC0033")) +
+	   ggtitle("Sphingobium ed6be") +
+	   theme(legend.position = 'none',
+	   axis.title.x=element_blank(),
+	   axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
+	   axis.title.y=element_blank(),
+	   axis.text.y=element_text(size = 10),
+	   plot.title = element_text(hjust = 0.5, size = 10))
+print(Sphingobium)
+All <- grid.arrange(Xanthomonas, Comamonadaceae, Arthrobacter, Sphingobium, nrow = 1)
+#ggsave(file="Enriched_ASVs_Noco2_Cala2_UU_MPIPZ_smaller.svg", plot=All, width=6, height=2)
