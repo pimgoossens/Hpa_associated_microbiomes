@@ -1,0 +1,82 @@
+LABELS
+#use this template to change the leaf labels, or define/change the internal node names
+#lines starting with a hash are comments and ignored during parsing
+
+#=================================================================#
+#                    MANDATORY SETTINGS                           #
+#=================================================================#
+#select the separator which is used to delimit the data below (TAB,SPACE or COMMA).This separator must be used throughout this file.
+
+SEPARATOR TAB
+#SEPARATOR SPACE
+#SEPARATOR COMMA
+
+#Internal tree nodes can be specified using IDs directly, or using the 'last common ancestor' method described in iTOL help pages
+#=================================================================#
+#       Actual data follows after the "DATA" keyword              #
+#=================================================================#
+DATA
+#NODE_ID,LABEL
+42fbddad8a098579cf2412325c7aaaa9	Arthrobacter_42fbd
+a0e1a3759ad3462a28017d94b4432ee1	Xanthomonas_a0e1a
+a40651859fbc083e4c97aaf60b733a63	Acidovorax_a4065
+ed6be6f35c692c6166ff8442f30ba282	Sphingobium_ed6be
+a05de28c3dd30349891e3a367c25dbd5	Plantibacter_a05de
+d93fb404358cbc6c5fb5c2c26f76bed6	Aeromicrobium_d93fb
+efbd034a138d9831af387259f9904dcf	Agromyces_efbd0
+0d15c22da9942dd74d8e06e3b3dcbb3c	Fluviicola_0d15c
+224c3c6cf14783ec1e5a0b2b6cb7eca5	Sphingobacterium_224c3
+235c42b49271bd7268fcad55de33b53e	Pedobacter_235c4
+3a0c1321ebad1dfbd01b70a09aa6e30b	Chryseobacterium_3a0c1
+5d7e3773d4933948bf126934d1c41efa	Sphingobacterium_5d7e3
+628cc399573d5e8fd0ca6287aa370175	Chitinophagaceae_628cc
+a10fc986a55c179ab9de4692610f7f68	Dyadobacter_a10fc
+aec8d6df5e39dbae9750799f1e2678f1	Sphingobacterium_aec8d
+c23f5ba0aada53d108f71926815fb4f4	Pedobacter_c23f5
+d0c4a44b8ca7ef41148be9cc781a097f	Sphingobacterium_d0c4a
+d40f893612da6f28aa401164add7051e	Nubsella_d40f8
+d541697fde83d4d4dd314b6b5596f0b1	Sphingobacterium_d5416
+db05cb9805e7078efe4ed46d1ab9e8af	Sphingobacterium_db05c
+e9b0959ee561652137c358df14c0e763	Pedobacter_e9b09
+f2a1b43875772d62233c6d85a595d843	Pedobacter_f2a1b
+2cb96b650bbff922328d4fc02f0767c5	uncultured_bacterium_2cb96
+08995258dcab3634cbbe385927d19c0b	Brevundimonas_08995
+0907630c9687032d4d09a53a1761c8f7	Rhizobium_09076
+18a9493174a87b8ddfa73655faa37a88	Comamonas_18a94
+1919e10bb7fe8700ae16e09e536adc7c	Hydrocarboniphaga_1919e
+29b65658a6bdb840ec8d056be8953f61	Devosia_29b65
+2f93552763f448f9a452c27b2db67b7a	Sphingomonas_2f935
+383279f128f7d4d3c877b05ac005c518	Ochrobactrum_38327
+3c69931f3a4f73948ab67a1249678525	Variovorax_3c699
+419363d6c01e0530014c2969b7098bbe	Sphingopyxis_41936
+52948b1ab2bcfee9c596942973a71e98	Comamonadaceae_52948
+52d6fae91fe613402b5eb064db422d2a	Caulobacter_52d6f
+5d899896a54dd0d0747cf6260509bf39	Sphingomonas_5d899
+63b419d0681cb1e6cc85e5a30570d5e6	Achromobacter_63b41
+77da9058bac1ba7013dea202bed3a325	Stenotrophomonas_77da9
+78c93dc2877bbb6423314c4012908222	Methylophilus_78c93
+7ef342d97a469edd5979b788b95a44e6	Brevundimonas_7ef34
+973cdc59ecf70e935e7d3fdbc87ee110	Brevundimonas_973cd
+a442e49938dd3fbe8cab8890a83d743b	Sphingomonas_a442e
+af190b852cec0d6eb78c15eb0e8777e0	Pseudomonas_af190
+af9ad978b21793a61cd6eec770c10649	Bosea_af9ad
+c41af3ba7aeabdb1886cf01eddb79139	Sphingobium_c41af
+c64d0b194420756c348758b5e64f855e	Rhizobium_c64d0
+ce02922c0724b0b420666893c07e3071	Kaistia_ce029
+cf25d4a90f748550689c08313753196f	Pseudomonas_cf25d
+deaf8029eba24ec9cfc9f77e9689423e	Comamonas_deaf8
+eb22905b6f4f9e46d68e84d518d6dc05	Brevundimonas_eb229
+f80125baf07e60239d3e8e462f7edaf8	Novosphingobium_f8012
+f981440f1fbc382d512a8ba283a920a8	Rhizobium_f9814
+81f5cf6e61e4c52f327dd829e49bfc40	Prosthecobacter_81f5c
+95a529b86d88a6107aee969a0900df7e	Nocardioides_95a52
+ef66dad7b163c5f07b4db66e1720b455	Flavobacterium_ef66d
+47b9b5aaf3fb157cea06b791bf0c4509	Novosphingobium_47b9b
+819286959c7d21780818a60b9f3e3481	Methylophilus_81928
+e50dba98d4ebddb99dbb214b18862ea3	Methylophilus_e50db
+#Examples
+#define a name for an internal node
+#9031|9606,Metazoa
+
+#change the label for leaf node 9606
+#9606,Homo sapiens

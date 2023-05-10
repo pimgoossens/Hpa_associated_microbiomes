@@ -1,0 +1,118 @@
+TREE_COLORS
+#use this template to define branch colors and styles, colored ranges and label colors/font styles/backgrounds
+#lines starting with a hash are comments and ignored during parsing
+
+#=================================================================#
+#                    MANDATORY SETTINGS                           #
+#=================================================================#
+#select the separator which is used to delimit the data below (TAB,SPACE or COMMA).This separator must be used throughout this file.
+
+SEPARATOR TAB
+#SEPARATOR SPACE
+#SEPARATOR COMMA
+
+#First 3 fields define the node, type and color
+#Possible types are:
+#'range': defines a colored range (colored background for labels/clade)
+#'clade': defines color/style for all branches in a clade
+#'branch': defines color/style for a single branch
+#'label': defines font color/style for the leaf label
+#'label_background': defines the leaf label background color
+
+#The following additional fields are required:
+#for 'range', field 4 defines the colored range label (used in the legend)
+
+#The following additional fields are optional:
+#for 'label', field 4 defines the font style ('normal',''bold', 'italic' or 'bold-italic') and field 5 defines the numeric scale factor for the font size (eg. with value 2, font size for that label will be 2x the standard size)
+#for 'clade' and 'branch', field 4 defines the branch style ('normal' or 'dashed') and field 5 defines the branch width scale factor (eg. with value 0.5, branch width for that clade will be 0.5 the standard width)
+
+#Internal tree nodes can be specified using IDs directly, or using the 'last common ancestor' method described in iTOL help pages
+#=================================================================#
+#       Actual data follows after the "DATA" keyword              #
+#=================================================================#
+DATA
+#NODE_ID TYPE COLOR LABEL_OR_STYLE SIZE_FACTOR
+
+#Examples
+#internal node with solid branches colored blue and twice the standard width
+#9031|9606 clade #0000ff normal 2
+#internal node with dashed branches colored red and one half the standard width
+#601|340 clade #ff0000 dashed 0.5
+#a single internal branch colored green, dashed and 5 times the normal width
+#915|777 branch #00ff00 dashed 5
+
+#colored range covering all leaves of an internal node,  colored red and with label 'Eukaryota'
+#184922|9606 range #ff0000 Eukaryota
+#examples of colored ranges from iTOL's Tree of Life
+#2190|2287 range #aaffaa Archaea
+#623|1502 range #aaaaff Bacteria
+
+#leaf label for node 9606 will be displayed in green, bold and twice the regular font size
+#9606 label #00ff00 bold 2
+id	Type	Color	Font	Size
+42fbddad8a098579cf2412325c7aaaa9	label	#FF0000	bold	2
+a0e1a3759ad3462a28017d94b4432ee1	label	#FF0000	bold	2
+a40651859fbc083e4c97aaf60b733a63	label	#FF0000	bold	2
+ed6be6f35c692c6166ff8442f30ba282	label	#FF0000	bold	2
+a05de28c3dd30349891e3a367c25dbd5	label	#FFC0CB		2
+d93fb404358cbc6c5fb5c2c26f76bed6	label	#FFC0CB		2
+efbd034a138d9831af387259f9904dcf	label	#FFC0CB		2
+0d15c22da9942dd74d8e06e3b3dcbb3c	label	#FFC0CB		2
+224c3c6cf14783ec1e5a0b2b6cb7eca5	label	#FFC0CB		2
+235c42b49271bd7268fcad55de33b53e	label	#FFC0CB		2
+3a0c1321ebad1dfbd01b70a09aa6e30b	label	#FFC0CB		2
+5d7e3773d4933948bf126934d1c41efa	label	#FFC0CB		2
+628cc399573d5e8fd0ca6287aa370175	label	#FFC0CB		2
+a10fc986a55c179ab9de4692610f7f68	label	#FFC0CB		2
+aec8d6df5e39dbae9750799f1e2678f1	label	#FFC0CB		2
+c23f5ba0aada53d108f71926815fb4f4	label	#FFC0CB		2
+d0c4a44b8ca7ef41148be9cc781a097f	label	#FFC0CB		2
+d40f893612da6f28aa401164add7051e	label	#FFC0CB		2
+d541697fde83d4d4dd314b6b5596f0b1	label	#FFC0CB		2
+db05cb9805e7078efe4ed46d1ab9e8af	label	#FFC0CB		2
+e9b0959ee561652137c358df14c0e763	label	#FFC0CB		2
+f2a1b43875772d62233c6d85a595d843	label	#FFC0CB		2
+2cb96b650bbff922328d4fc02f0767c5	label	#FFC0CB		2
+08995258dcab3634cbbe385927d19c0b	label	#FFC0CB		2
+0907630c9687032d4d09a53a1761c8f7	label	#FFC0CB		2
+18a9493174a87b8ddfa73655faa37a88	label	#FFC0CB		2
+1919e10bb7fe8700ae16e09e536adc7c	label	#FFC0CB		2
+29b65658a6bdb840ec8d056be8953f61	label	#FFC0CB		2
+2f93552763f448f9a452c27b2db67b7a	label	#FFC0CB		2
+383279f128f7d4d3c877b05ac005c518	label	#FFC0CB		2
+3c69931f3a4f73948ab67a1249678525	label	#FFC0CB		2
+419363d6c01e0530014c2969b7098bbe	label	#FFC0CB		2
+52948b1ab2bcfee9c596942973a71e98	label	#FFC0CB		2
+52d6fae91fe613402b5eb064db422d2a	label	#FFC0CB		2
+5d899896a54dd0d0747cf6260509bf39	label	#FFC0CB		2
+63b419d0681cb1e6cc85e5a30570d5e6	label	#FFC0CB		2
+77da9058bac1ba7013dea202bed3a325	label	#FFC0CB		2
+78c93dc2877bbb6423314c4012908222	label	#FFC0CB		2
+7ef342d97a469edd5979b788b95a44e6	label	#FFC0CB		2
+973cdc59ecf70e935e7d3fdbc87ee110	label	#FFC0CB		2
+a442e49938dd3fbe8cab8890a83d743b	label	#FFC0CB		2
+af190b852cec0d6eb78c15eb0e8777e0	label	#FFC0CB		2
+af9ad978b21793a61cd6eec770c10649	label	#FFC0CB		2
+c41af3ba7aeabdb1886cf01eddb79139	label	#FFC0CB		2
+c64d0b194420756c348758b5e64f855e	label	#FFC0CB		2
+ce02922c0724b0b420666893c07e3071	label	#FFC0CB		2
+cf25d4a90f748550689c08313753196f	label	#FFC0CB		2
+deaf8029eba24ec9cfc9f77e9689423e	label	#FFC0CB		2
+eb22905b6f4f9e46d68e84d518d6dc05	label	#FFC0CB		2
+f80125baf07e60239d3e8e462f7edaf8	label	#FFC0CB		2
+f981440f1fbc382d512a8ba283a920a8	label	#FFC0CB		2
+81f5cf6e61e4c52f327dd829e49bfc40	label	#FFC0CB		2
+95a529b86d88a6107aee969a0900df7e	label	#FF1493		2
+ef66dad7b163c5f07b4db66e1720b455	label	#FF1493		2
+47b9b5aaf3fb157cea06b791bf0c4509	label	#FF1493		2
+819286959c7d21780818a60b9f3e3481	label	#FF1493		2
+e50dba98d4ebddb99dbb214b18862ea3	label	#FF1493		2
+
+#leaf label for node 9031 will be displayed in yellow, bold italic and half the  font size
+#9031 label #ffff00 bold-italic 0.5
+
+#leaf label for node 8015 will be displayed in blue
+#8015 label #0000ff
+
+#leaf label for node 9606 will have a semi-transparent red background
+#9606 label_background rgba(255,0,0,0.5)

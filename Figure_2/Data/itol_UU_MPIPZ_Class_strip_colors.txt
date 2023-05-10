@@ -1,0 +1,179 @@
+DATASET_COLORSTRIP
+#In colored strip datasets, each ID is associated to a color box/strip and can have an optional label. Color can be specified in hexadecimal, RGB or RGBA notation. When using RGB or RGBA notation, you cannot use COMMA as the dataset separator
+
+#lines starting with a hash are comments and ignored during parsing
+
+#=================================================================#
+#                    MANDATORY SETTINGS                           #
+#=================================================================#
+#select the separator which is used to delimit the data below (TAB,SPACE or COMMA).This separator must be used throughout this file.
+
+#SEPARATOR TAB
+#SEPARATOR COMMA
+SEPARATOR SPACE
+
+#label is used in the legend table (can be changed later)
+DATASET_LABEL Class
+
+#dataset color (can be changed later)
+COLOR #ff0000
+
+#=================================================================#
+#                    OPTIONAL SETTINGS                            #
+#=================================================================#
+
+#If COLOR_BRANCHES is set to 1, branches of the tree will be colored according to the colors of the strips above the leaves.
+#When all children of a node have the same color, it will be colored the same, ie. the color will propagate inwards towards the root.
+COLOR_BRANCHES 1
+
+
+#=================================================================#
+#     all other optional settings can be set or changed later     #
+#           in the web interface (under 'Datasets' tab)           #
+#=================================================================#
+
+#Each dataset can have a legend, which is defined using LEGEND_XXX fields below
+#For each row in the legend, there should be one shape, color and label.
+#Optionally, you can define an exact legend position using LEGEND_POSITION_X and LEGEND_POSITION_Y. To use automatic legend positioning, do NOT define these values
+#Optionally, shape scaling can be present (LEGEND_SHAPE_SCALES). For each shape, you can define a scaling factor between 0 and 1.
+#To order legend entries horizontally instead of vertically, set LEGEND_HORIZONTAL to 1
+#Shape should be a number between 1 and 6, or any protein domain shape definition.
+#1: square
+#2: circle
+#3: star
+#4: right pointing triangle
+#5: left pointing triangle
+#6: checkmark
+
+#LEGEND_TITLE Dataset_legend
+#LEGEND_POSITION_X 100
+#LEGEND_POSITION_Y 100
+#LEGEND_HORIZONTAL 0
+#LEGEND_SHAPES 1 1 2 2
+#LEGEND_COLORS #ff0000 #00ff00 rgba(0,255,0,0.5) #0000ff
+#LEGEND_LABELS value1 value2 value3 value4
+#LEGEND_SHAPE_SCALES 1 1 0.5 1
+
+#width of the colored strip
+#STRIP_WIDTH 25
+
+#left margin, used to increase/decrease the spacing to the next dataset. Can be negative, causing datasets to overlap.
+#MARGIN 0
+
+#border width; if set above 0, a border of specified width (in pixels) will be drawn around the color strip 
+#BORDER_WIDTH 0
+
+#border color; used when BORDER_WIDTH is above 0
+#BORDER_COLOR #0000ff
+
+#if set to 1, border will be drawn completely around each colored strip box
+#COMPLETE_BORDER 0
+
+#always show internal values; if set, values associated to internal nodes will be displayed even if these nodes are not collapsed. It could cause overlapping in the dataset display.
+#SHOW_INTERNAL 0
+
+
+#display or hide the individual label inside each colored strip (when defined in the data below)
+#SHOW_STRIP_LABELS 1
+
+#position of the strip label within the box; 'top', 'center' or 'bottom'
+#STRIP_LABEL_POSITION center
+
+#strip label size factor (relative to the tree leaf labels)
+#STRIP_LABEL_SIZE_FACTOR 1
+
+
+#rotation of the strip labels; used only in rectangular tree display mode
+#STRIP_LABEL_ROTATION 0
+
+#strip label shift in pixels (positive or negative)
+#STRIP_LABEL_SHIFT 0
+
+#STRIP_LABEL_COLOR #eee685
+
+#draw a black outline around the text (width in pixels)
+#STRIP_LABEL_OUTLINE 0.5
+
+#display or hide the dataset label above the colored strip
+#SHOW_LABELS 1
+
+#dataset label size factor
+#SIZE_FACTOR 1
+
+#dataset label rotation
+#LABEL_ROTATION 0
+
+#dataset label shift in pixels (positive or negative)
+#LABEL_SHIFT 0
+
+#Internal tree nodes can be specified using IDs directly, or using the 'last common ancestor' method described in iTOL help pages
+
+#=================================================================#
+#       Actual data follows after the "DATA" keyword              #
+#=================================================================#
+DATA
+42fbddad8a098579cf2412325c7aaaa9 #1C86EE Actinobacteria
+a05de28c3dd30349891e3a367c25dbd5 #1C86EE Actinobacteria
+d93fb404358cbc6c5fb5c2c26f76bed6 #1C86EE Actinobacteria
+efbd034a138d9831af387259f9904dcf #1C86EE Actinobacteria
+95a529b86d88a6107aee969a0900df7e #1C86EE Actinobacteria
+ed6be6f35c692c6166ff8442f30ba282 #964B00 Alphaproteobacteria
+08995258dcab3634cbbe385927d19c0b #964B00 Alphaproteobacteria
+0907630c9687032d4d09a53a1761c8f7 #964B00 Alphaproteobacteria
+29b65658a6bdb840ec8d056be8953f61 #964B00 Alphaproteobacteria
+2f93552763f448f9a452c27b2db67b7a #964B00 Alphaproteobacteria
+383279f128f7d4d3c877b05ac005c518 #964B00 Alphaproteobacteria
+419363d6c01e0530014c2969b7098bbe #964B00 Alphaproteobacteria
+52d6fae91fe613402b5eb064db422d2a #964B00 Alphaproteobacteria
+5d899896a54dd0d0747cf6260509bf39 #964B00 Alphaproteobacteria
+7ef342d97a469edd5979b788b95a44e6 #964B00 Alphaproteobacteria
+973cdc59ecf70e935e7d3fdbc87ee110 #964B00 Alphaproteobacteria
+a442e49938dd3fbe8cab8890a83d743b #964B00 Alphaproteobacteria
+af9ad978b21793a61cd6eec770c10649 #964B00 Alphaproteobacteria
+c41af3ba7aeabdb1886cf01eddb79139 #964B00 Alphaproteobacteria
+c64d0b194420756c348758b5e64f855e #964B00 Alphaproteobacteria
+ce02922c0724b0b420666893c07e3071 #964B00 Alphaproteobacteria
+eb22905b6f4f9e46d68e84d518d6dc05 #964B00 Alphaproteobacteria
+f80125baf07e60239d3e8e462f7edaf8 #964B00 Alphaproteobacteria
+f981440f1fbc382d512a8ba283a920a8 #964B00 Alphaproteobacteria
+47b9b5aaf3fb157cea06b791bf0c4509 #964B00 Alphaproteobacteria
+a40651859fbc083e4c97aaf60b733a63 #008b00 Betaproteobacteria
+18a9493174a87b8ddfa73655faa37a88 #008b00 Betaproteobacteria
+3c69931f3a4f73948ab67a1249678525 #008b00 Betaproteobacteria
+52948b1ab2bcfee9c596942973a71e98 #008b00 Betaproteobacteria
+63b419d0681cb1e6cc85e5a30570d5e6 #008b00 Betaproteobacteria
+78c93dc2877bbb6423314c4012908222 #008b00 Betaproteobacteria
+deaf8029eba24ec9cfc9f77e9689423e #008b00 Betaproteobacteria
+819286959c7d21780818a60b9f3e3481 #008b00 Betaproteobacteria
+e50dba98d4ebddb99dbb214b18862ea3 #008b00 Betaproteobacteria
+a10fc986a55c179ab9de4692610f7f68 #6A3D9A Cytophagia
+2cb96b650bbff922328d4fc02f0767c5 #FDBF6F FBP
+0d15c22da9942dd74d8e06e3b3dcbb3c #FFFF66 Flavobacteriia
+3a0c1321ebad1dfbd01b70a09aa6e30b #FFFF66 Flavobacteriia
+ef66dad7b163c5f07b4db66e1720b455 #FFFF66 Flavobacteriia
+a0e1a3759ad3462a28017d94b4432ee1 #eee685 Gammaproteobacteria
+1919e10bb7fe8700ae16e09e536adc7c #eee685 Gammaproteobacteria
+77da9058bac1ba7013dea202bed3a325 #eee685 Gammaproteobacteria
+af190b852cec0d6eb78c15eb0e8777e0 #eee685 Gammaproteobacteria
+cf25d4a90f748550689c08313753196f #eee685 Gammaproteobacteria
+224c3c6cf14783ec1e5a0b2b6cb7eca5 #7ec0ee  Sphingobacteriia
+235c42b49271bd7268fcad55de33b53e #7ec0ee  Sphingobacteriia
+5d7e3773d4933948bf126934d1c41efa #7ec0ee  Sphingobacteriia
+628cc399573d5e8fd0ca6287aa370175 #7ec0ee  Sphingobacteriia
+aec8d6df5e39dbae9750799f1e2678f1 #7ec0ee  Sphingobacteriia
+c23f5ba0aada53d108f71926815fb4f4 #7ec0ee  Sphingobacteriia
+d0c4a44b8ca7ef41148be9cc781a097f #7ec0ee  Sphingobacteriia
+d40f893612da6f28aa401164add7051e #7ec0ee  Sphingobacteriia
+d541697fde83d4d4dd314b6b5596f0b1 #7ec0ee  Sphingobacteriia
+db05cb9805e7078efe4ed46d1ab9e8af #7ec0ee  Sphingobacteriia
+e9b0959ee561652137c358df14c0e763 #7ec0ee  Sphingobacteriia
+f2a1b43875772d62233c6d85a595d843 #7ec0ee  Sphingobacteriia
+81f5cf6e61e4c52f327dd829e49bfc40 #CAB2D6 Verrucomicrobiae
+
+#Examples:
+#assign a red colored strip to leaf 9606, with label 'Human'
+#9606 #ff0000 Human
+
+#assign a green, semi-transparent (alpha 0.5) strip to an internal node, without any label. If 'Show internal values' is set to 'No', this will only be displayed if the node is collapsed. 
+#9606|5664 rgba(0,255,0,0.5)
+
