@@ -1,0 +1,234 @@
+####################
+##########
+#Fig. 6A
+theme_set(theme_bw())
+table <- read.table("Supporting_data_figure_6A.csv", header = TRUE, sep = ";")
+table$Treatment_conditioning_population <- factor(table$Treatment_conditioning_population, levels = c('Mock', 'Hpa', 'gnoHpa'))
+
+DunnettTest(x=subset_table$Spores_g, g=subset_table$Treatment_conditioning_population)
+
+barplot <- ggbarplot(subset_table, x = "Treatment_conditioning_population", y = "Spores_g", fill = "Treatment_conditioning_population",
+                     add = "mean_se",
+                     position = position_dodge(0.8), width = 0.5, ylim = c(0,450000)) +
+  scale_y_continuous(name = "spores/gram freshweight", labels = number) +
+  geom_jitter(size = 1.5, width = 0.25)+
+  scale_fill_manual(values=c(Mock = "dark green", Hpa = "dark green", gnoHpa = "dark green")) +
+  theme(legend.position = 'none',
+        axis.title.x=element_blank(),
+        axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
+        axis.text.y=element_text(size = 10),
+        axis.title.y=element_text(size = 10, vjust = 2),
+        plot.title = element_text(hjust = 0.5, size = 10))
+print(barplot)
+ggsave(file="barplot_spores_g_green_Jitter.svg", plot=barplot, width=4, height=3.75)
+
+#Fig. 6B
+theme_set(theme_bw())
+table <- read.table("Supporting_data_figure_6B.csv", header = TRUE, sep = ";")
+table$Treatment<- factor(table$Treatment, levels = c('Col-0_Mock_Hpa', 'Col-0_Hpa_Hpa', 'Col-0_RPP5_Mock_Hpa', 'Col-0_RPP5_Hpa_Hpa'))
+
+barplot <- ggbarplot(table, x = "Treatment", y = "Spores_g", fill = "Treatment",
+                     add = "mean_se",
+                     position = position_dodge(0.8), width = 0.5, ylim = c(0,1200000)) +
+  scale_y_continuous(name = "spores per gram freshweight", labels = number) +
+  geom_jitter(size = 1.5, width = 0.25)+
+  scale_fill_manual(values=c(Col-0_Mock_Hpa = "dark green", Col-0_Hpa_Hpa = "dark green", Col-0_RPP5_Mock_Hpa = "dark green", Col-0_RPP5_Hpa_Hpa = "dark green")) +
+  theme(legend.position = 'none',
+        axis.title.x=element_blank(),
+        axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
+        axis.text.y=element_text(size = 10),
+        axis.title.y=element_text(size = 10, vjust = 2),
+        plot.title = element_text(hjust = 0.5, size = 10))
+print(barplot)
+ggsave(file="barplot_spores_g_Jitter.svg", plot=barplot, width=4, height=3.75)
+
+#Fig. 6 amplicon sequencing data
+
+metadata <- import_qiime_sample_data("Metadata.txt")
+ASV_table <- import_biom(BIOMfilename = "Phyloseq.biom")
+ASV_table_meta <- merge_phyloseq(ASV_table, metadata)
+colnames(tax_table(ASV_table_meta)) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
+samples_relative = transform_sample_counts(ASV_table_meta, function(x) x/sum(x))
+theme_set(theme_bw())
+
+
+
+INSERT DESEQ ON HOW WE GET TO HAM LIST
+
+
+Long_samples_relative <- samples_relative %>%
+  psmelt() # Melt to long format
+Long_samples_relative$Abundance = Long_samples_relative$Abundance *100
+#add column based on overlap in enriched/depleted in all Hpa samples (DESeq2 output)
+overlap <- read.table("DESeq2_G1_Phyllo_HpaEnriched.txt", header = TRUE)
+Long_samples_relative_2 <- left_join(Long_samples_relative, overlap, by = "OTU")
+Long_samples_relative_2 <- subset(Long_samples_relative_2, Status != "NA")
+Long_samples_relative_3 <- Long_samples_relative_2[order(Long_samples_relative_2$Status),]
+Long_samples_relative_3$Status <- factor(Long_samples_relative_3$Status, levels = c('Enriched'))
+Long_samples_relative_3$Treatment_generation_1 <- factor(Long_samples_relative_3$Treatment_generation_1, levels = c('Mock', 'Hpa', 'GnoHpa'))
+Long_samples_relative_3$Treatment_generation_2 <- factor(Long_samples_relative_3$Treatment_generation_2, levels = c('Mock', 'Hpa', 'GnoHpa'))
+
+#Fig. 6C
+G1_phyllo <- subset(Long_samples_relative_3, Sample_Type == "Phyllosphere" & Generation == "Generation_1")
+selection <- G1_phyllo %>%
+  group_by(OTU, Treatment, Genus) %>%
+  summarise(mean_abundance = mean(Abundance)) #%>%
+
+selection$Treatment <- factor(selection$Treatment, levels = c("Mock", "Hpa", "GnoHpa"))
+G1_phyllo$Genus <- gsub('"', "",as.character(G1_phyllo$Genus))
+
+vec_ASV <- c("a0e1a3759ad3462a28017d94b4432ee1", "658eebc784071ddd4ef4de8e3f9afeca", "ef66dad7b163c5f07b4db66e1720b455", "3a0c1321ebad1dfbd01b70a09aa6e30b", "d93fb404358cbc6c5fb5c2c26f76bed6", "42fbddad8a098579cf2412325c7aaaa9", "ed6be6f35c692c6166ff8442f30ba282", "419363d6c01e0530014c2969b7098bbe", "2569b4c4cad75aecc852532bc6bd3c10", "e50dba98d4ebddb99dbb214b18862ea3", "eb22905b6f4f9e46d68e84d518d6dc05", "29b65658a6bdb840ec8d056be8953f61", "	f96ada7c4859c6238d0429cecde2f0be", "9cce057c75c4bf8792364e8776ec3161", "77da9058bac1ba7013dea202bed3a325", "a40651859fbc083e4c97aaf60b733a63", "eababa30ab4bf85e4636a00f79e08e07", "97d635d2b73945d8fdddc2841b29f8b9", "e9b0959ee561652137c358df14c0e763")    
+selection$Genus[!selection$OTU %in% vec_ASV] <- NA
+
+taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Genus)) +
+  geom_bar(stat = "identity", color = '#333333') +
+  scale_y_continuous(name = "Abundance (%)") +
+  expand_limits(y = c(0,100))+
+  theme(axis.title.x = element_blank(),
+        #legend.position='none',
+        strip.text.x = element_text(size = 10),
+        axis.ticks.x=element_blank(),
+        axis.text.x=element_text(size=15, angle = 30, hjust = 1),
+        axis.title.y=element_text(size=20),
+        axis.text.y=element_text(size=20))
+print(taxbarplot)
+ggsave(file="Phyllo_tax_barplot_G1_OTU.svg", plot=taxbarplot, width=6, height=4.6)
+
+#Fig. 6D
+G1_rhizo <- subset(Long_samples_relative_3, Sample_Type == "Rhizosphere" & Generation == "Generation_1")
+G1_rhizo <- subset(G1_rhizo, Sample != "R-G-G1-4")
+G1_rhizo <- subset(G1_rhizo, Sample != "R-G-G1-8")
+
+selection <- G1_rhizo %>%
+  group_by(OTU, Treatment, Genus) %>%
+  summarise(mean_abundance = mean(Abundance)) #%>%
+
+selection$Treatment <- factor(selection$Treatment, levels = c("Mock", "Hpa", "GnoHpa"))
+G1_phyllo$Genus <- gsub('"', "",as.character(G1_phyllo$Genus))
+
+vec_ASV <- c("a0e1a3759ad3462a28017d94b4432ee1", "658eebc784071ddd4ef4de8e3f9afeca", "ef66dad7b163c5f07b4db66e1720b455", "3a0c1321ebad1dfbd01b70a09aa6e30b", "d93fb404358cbc6c5fb5c2c26f76bed6", "42fbddad8a098579cf2412325c7aaaa9", "ed6be6f35c692c6166ff8442f30ba282", "419363d6c01e0530014c2969b7098bbe", "2569b4c4cad75aecc852532bc6bd3c10", "e50dba98d4ebddb99dbb214b18862ea3", "eb22905b6f4f9e46d68e84d518d6dc05", "29b65658a6bdb840ec8d056be8953f61", "	f96ada7c4859c6238d0429cecde2f0be", "9cce057c75c4bf8792364e8776ec3161", "77da9058bac1ba7013dea202bed3a325", "a40651859fbc083e4c97aaf60b733a63", "eababa30ab4bf85e4636a00f79e08e07", "97d635d2b73945d8fdddc2841b29f8b9", "e9b0959ee561652137c358df14c0e763")    
+selection$Genus[!selection$OTU %in% vec_ASV] <- NA
+
+taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Genus)) +
+  geom_bar(stat = "identity", color = '#333333') +
+  scale_y_continuous(name = "Abundance (%)") +
+  expand_limits(y = c(0,1.5))+
+  theme(axis.title.x = element_blank(),
+        #legend.position='none',
+        strip.text.x = element_text(size = 10),
+        axis.ticks.x=element_blank(),
+        axis.text.x=element_text(size=15, angle = 30, hjust = 1),
+        axis.title.y=element_text(size=20),
+        axis.text.y=element_text(size=20))
+print(taxbarplot)
+ggsave(file="Rhizo_tax_barplot_G1_OTU.svg", plot=taxbarplot, width=6, height=4.6)
+
+#Fig. 6E
+G2_phyllo <- subset(Long_samples_relative_3, Generation == "Generation_2" & Sample_Type == "Phyllosphere")
+G2_phyllo <- subset(G2_phyllo, Treatment_generation_1 != "GnoHpa")
+G2_phyllo <- subset(G2_phyllo, Treatment_generation_2 != "Hpa")
+
+selection <- G2_phyllo %>%
+  group_by(OTU, Treatment, Genus) %>%
+  summarise(mean_abundance = mean(Abundance)) #%>%
+
+vec_ASV <- c("a0e1a3759ad3462a28017d94b4432ee1", "658eebc784071ddd4ef4de8e3f9afeca", "ef66dad7b163c5f07b4db66e1720b455", "3a0c1321ebad1dfbd01b70a09aa6e30b", "d93fb404358cbc6c5fb5c2c26f76bed6", "42fbddad8a098579cf2412325c7aaaa9", "ed6be6f35c692c6166ff8442f30ba282", "419363d6c01e0530014c2969b7098bbe", "2569b4c4cad75aecc852532bc6bd3c10", "e50dba98d4ebddb99dbb214b18862ea3", "eb22905b6f4f9e46d68e84d518d6dc05", "29b65658a6bdb840ec8d056be8953f61", "	f96ada7c4859c6238d0429cecde2f0be", "9cce057c75c4bf8792364e8776ec3161", "77da9058bac1ba7013dea202bed3a325", "a40651859fbc083e4c97aaf60b733a63", "eababa30ab4bf85e4636a00f79e08e07", "97d635d2b73945d8fdddc2841b29f8b9", "e9b0959ee561652137c358df14c0e763")  
+selection$Genus[!selection$OTU %in% vec_ASV] <- NA
+selection$Treatment <- factor(selection$Treatment, levels = c("Mock_Mock", "Mock_GnoHpa", "Hpa_Mock", "Hpa_GnoHpa"))
+
+taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Genus)) +
+  geom_bar(stat = "identity", color = '#333333') +
+  scale_y_continuous(name = "Abundance (%)") +
+  expand_limits(y = c(0,100))+
+  theme(axis.title.x = element_blank(),
+        #legend.position='none',
+        strip.text.x = element_text(size = 10),
+        axis.ticks.x=element_blank(),
+        axis.text.x=element_text(size=15, angle = 30, hjust = 1),
+        axis.title.y=element_text(size=20),
+        axis.text.y=element_text(size=20))
+print(taxbarplot)
+ggsave(file="Phyllo_tax_barplot_G2_Inheritance_OTU.svg", plot=taxbarplot, width=6, height=4.6)
+
+#Fig. 6F
+G2_rhizo <- subset(Long_samples_relative_3, Generation == "Generation_2" & Sample_Type == "Rhizosphere")
+G2_rhizo <- subset(G2_rhizo, Treatment_generation_1 != "GnoHpa")
+G2_rhizo <- subset(G2_rhizo, Treatment_generation_2 != "Hpa")
+
+selection <- G2_rhizo %>%
+  group_by(OTU, Treatment, Genus) %>%
+  summarise(mean_abundance = mean(Abundance)) #%>%
+
+vec_ASV <- c("a0e1a3759ad3462a28017d94b4432ee1", "658eebc784071ddd4ef4de8e3f9afeca", "ef66dad7b163c5f07b4db66e1720b455", "3a0c1321ebad1dfbd01b70a09aa6e30b", "d93fb404358cbc6c5fb5c2c26f76bed6", "42fbddad8a098579cf2412325c7aaaa9", "ed6be6f35c692c6166ff8442f30ba282", "419363d6c01e0530014c2969b7098bbe", "2569b4c4cad75aecc852532bc6bd3c10", "e50dba98d4ebddb99dbb214b18862ea3", "eb22905b6f4f9e46d68e84d518d6dc05", "29b65658a6bdb840ec8d056be8953f61", "	f96ada7c4859c6238d0429cecde2f0be", "9cce057c75c4bf8792364e8776ec3161", "77da9058bac1ba7013dea202bed3a325", "a40651859fbc083e4c97aaf60b733a63", "eababa30ab4bf85e4636a00f79e08e07", "97d635d2b73945d8fdddc2841b29f8b9", "e9b0959ee561652137c358df14c0e763")  
+selection$Genus[!selection$OTU %in% vec_ASV] <- NA
+selection$Treatment <- factor(selection$Treatment, levels = c("Mock_Mock", "Mock_GnoHpa", "Hpa_Mock", "Hpa_GnoHpa"))
+
+taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Genus)) +
+  geom_bar(stat = "identity", color = '#333333') +
+  scale_y_continuous(name = "Abundance (%)") +
+  expand_limits(y = c(0,1.5))+
+  theme(axis.title.x = element_blank(),
+        #legend.position='none',
+        strip.text.x = element_text(size = 10),
+        axis.ticks.x=element_blank(),
+        axis.text.x=element_text(size=15, angle = 30, hjust = 1),
+        axis.title.y=element_text(size=20),
+        axis.text.y=element_text(size=20))
+print(taxbarplot)
+ggsave(file="rhizo_tax_barplot_G2_inheritance_OTU.svg", plot=taxbarplot, width=6, height=4.6)
+
+#Fig. 6G
+
+G2_phyllo <- subset(Long_samples_relative_3, Generation == "Generation_2" & Sample_Type == "Phyllosphere")
+G2_phyllo <- subset(G2_phyllo, Treatment_generation_1 != "Hpa")
+G2_phyllo <- subset(G2_phyllo, Treatment_generation_2 != "Hpa")
+
+selection <- G2_phyllo %>%
+  group_by(OTU, Treatment, Genus) %>%
+  summarise(mean_abundance = mean(Abundance)) #%>%
+
+vec_ASV <- c("a0e1a3759ad3462a28017d94b4432ee1", "658eebc784071ddd4ef4de8e3f9afeca", "ef66dad7b163c5f07b4db66e1720b455", "3a0c1321ebad1dfbd01b70a09aa6e30b", "d93fb404358cbc6c5fb5c2c26f76bed6", "42fbddad8a098579cf2412325c7aaaa9", "ed6be6f35c692c6166ff8442f30ba282", "419363d6c01e0530014c2969b7098bbe", "2569b4c4cad75aecc852532bc6bd3c10", "e50dba98d4ebddb99dbb214b18862ea3", "eb22905b6f4f9e46d68e84d518d6dc05", "29b65658a6bdb840ec8d056be8953f61", "	f96ada7c4859c6238d0429cecde2f0be", "9cce057c75c4bf8792364e8776ec3161", "77da9058bac1ba7013dea202bed3a325", "a40651859fbc083e4c97aaf60b733a63", "eababa30ab4bf85e4636a00f79e08e07", "97d635d2b73945d8fdddc2841b29f8b9", "e9b0959ee561652137c358df14c0e763")  
+selection$Genus[!selection$OTU %in% vec_ASV] <- NA
+selection$Treatment <- factor(selection$Treatment, levels = c("Mock_Mock", "GnoHpa_Mock", "Mock_GnoHpa", "GnoHpa_GnoHpa"))
+
+taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Genus)) +
+  geom_bar(stat = "identity", color = '#333333') +
+  scale_y_continuous(name = "Abundance (%)") +
+  expand_limits(y = c(0,20))+
+  theme(axis.title.x = element_blank(),
+        #legend.position='none',
+        strip.text.x = element_text(size = 10),
+        axis.ticks.x=element_blank(),
+        axis.text.x=element_text(size=15, angle = 30, hjust = 1),
+        axis.title.y=element_text(size=20),
+        axis.text.y=element_text(size=20))
+print(taxbarplot)
+ggsave(file="Phyllo_tax_barplot_G2_Recruitment_OTU.svg", plot=taxbarplot, width=6, height=4.6)
+
+#Fig. 6H
+G2_rhizo <- subset(Long_samples_relative_3, Generation == "Generation_2" & Sample_Type == "Rhizosphere")
+G2_rhizo <- subset(G2_rhizo, Treatment_generation_1 != "Hpa")
+G2_rhizo <- subset(G2_rhizo, Treatment_generation_2 != "Hpa")
+
+selection <- G2_rhizo %>%
+  group_by(OTU, Treatment, Genus) %>%
+  summarise(mean_abundance = mean(Abundance)) #%>%
+
+vec_ASV <- c("a0e1a3759ad3462a28017d94b4432ee1", "658eebc784071ddd4ef4de8e3f9afeca", "ef66dad7b163c5f07b4db66e1720b455", "3a0c1321ebad1dfbd01b70a09aa6e30b", "d93fb404358cbc6c5fb5c2c26f76bed6", "42fbddad8a098579cf2412325c7aaaa9", "ed6be6f35c692c6166ff8442f30ba282", "419363d6c01e0530014c2969b7098bbe", "2569b4c4cad75aecc852532bc6bd3c10", "e50dba98d4ebddb99dbb214b18862ea3", "eb22905b6f4f9e46d68e84d518d6dc05", "29b65658a6bdb840ec8d056be8953f61", "	f96ada7c4859c6238d0429cecde2f0be", "9cce057c75c4bf8792364e8776ec3161", "77da9058bac1ba7013dea202bed3a325", "a40651859fbc083e4c97aaf60b733a63", "eababa30ab4bf85e4636a00f79e08e07", "97d635d2b73945d8fdddc2841b29f8b9", "e9b0959ee561652137c358df14c0e763")  
+selection$Genus[!selection$OTU %in% vec_ASV] <- NA
+selection$Treatment <- factor(selection$Treatment, levels = c("Mock_Mock", "GnoHpa_Mock", "Mock_GnoHpa", "GnoHpa_GnoHpa"))
+
+taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Genus)) +
+  geom_bar(stat = "identity", color = '#333333') +
+  scale_y_continuous(name = "Abundance (%)") +
+  expand_limits(y = c(0,0.20))+
+  theme(axis.title.x = element_blank(),
+        #legend.position='none',
+        strip.text.x = element_text(size = 10),
+        axis.ticks.x=element_blank(),
+        axis.text.x=element_text(size=15, angle = 30, hjust = 1),
+        axis.title.y=element_text(size=20),
+        axis.text.y=element_text(size=20))
+print(taxbarplot)
+ggsave(file="rhizo_tax_barplot_G2_Recruitment_OTU.svg", plot=taxbarplot, width=6, height=4.6)
+  
