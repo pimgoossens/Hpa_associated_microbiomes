@@ -1,0 +1,120 @@
+####################
+##########
+#Fig. 5C
+theme_set(theme_bw())
+table <- read.table("Supporting_data_figure_5C.csv", header = TRUE, sep = ";")
+table$Treatment <- factor(table$Treatment, levels = c('Hpa_10', 'GnoHpa_10', 'Hpa_25', 'GnoHpa_25', 'Hpa_50', 'GnoHpa_50', 'Hpa_100', 'GnoHpa_100'))
+table$Innoculum <- factor(table$Innoculum, levels = c('Hpa', 'GnoHpa'))
+table$Spore_concentration <- factor(table$Spore_concentration, levels = c('10', '25', '50', '100'))
+
+barplot <- ggbarplot(table, x = "Treatment", y = "Spores_g", fill = "Innoculum",
+                     add = c("mean_se"),
+                     position = position_dodge(0.8),
+                     width = 0.5, ylim = c(0,1000000)) +
+  scale_y_continuous(name = "spores/gram freshweight", label = number) +
+  geom_jitter(size = 1, width = 0.25)+
+  scale_fill_manual(values = c("GnoHpa" = 'dark green', 'Hpa' = 'dark green')) +
+  theme(legend.position = 'none',
+        axis.title.x=element_blank(),
+        axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
+        axis.text.y=element_text(size = 10),
+        axis.title.y=element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, size = 10))
+print(barplot)
+ggsave(file="Multiple_inoculation_density_green_Jitter.svg", plot=barplot, width=5, height=3.5)
+
+#Fig. 5D
+table <- read.table("Supporting_data_figure_5D.csv", header = TRUE, sep = ";")
+table$Treatment <- factor(table$Treatment, levels = c('gnoHpa', 'gnoHpa + HAM', 'Hpa'))
+
+#ANOVA
+anova_treatment <- aov(spores_g ~ Treatment, data = table)
+{summary(anova_treatment)
+  summary.lm(anova_treatment)}
+
+#posthoc
+
+TUKEY <- TukeyHSD(anova_treatment)
+print(TUKEY)
+
+generate_label_df <- function(TUKEY, variable){
+  
+  # Extract labels and factor levels from Tukey post-hoc
+  Tukey.levels <- TUKEY[[variable]][,4]
+  Tukey.labels <- data.frame(multcompLetters(Tukey.levels)['Letters'])
+  
+  #I need to put the labels in the same order as in the boxplot :
+  Tukey.labels$treatment=rownames(Tukey.labels)
+  Tukey.labels=Tukey.labels[order(Tukey.labels$treatment) , ]
+  return(Tukey.labels)
+}
+
+# Apply the function on my dataset
+LABELS <- generate_label_df(TUKEY , "Treatment")
+names(LABELS)<-c('Letters','Treatment')
+yvalue<-aggregate(spores_g~Treatment, data=table, mean)# obtain letter position for y axis using means
+final<-merge(yvalue,LABELS)
+
+barplot <- ggbarplot(table, x = "Treatment", y = "spores_g", fill = "Treatment",
+                     add = "mean_se",
+                     position = position_dodge(0.8), width = 0.5, ylim = c(0,60000)) +
+  geom_jitter(size = 1, width = 0.25)+
+  scale_y_continuous(name = "spores/gram freshweight", label = number) +
+  geom_text(data = final, aes(y=spores_g, label = Letters),vjust=-2.2,hjust=0.5)+
+  scale_fill_manual(values = c("gnoHpa" = 'dark green', 'gnoHpa + HAM' = 'dark green', 'Hpa' = 'dark green')) +
+  theme(legend.position = 'none',
+        axis.title.x=element_blank(),
+        axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
+        axis.text.y=element_text(size = 10),
+        axis.title.y=element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, size = 10))
+print(barplot)
+ggsave(file="filter_exp_1_green_jitter.svg", plot=barplot, width=3, height=3)
+
+#Fig. 5E
+table <- read.table("Supporting_data_figure_5E.csv", header = TRUE, sep = ";")
+table$Treatment <- factor(table$Treatment, levels = c('gnoHpa', 'gnoHpa+HAM', 'gnoHpa+resident'))
+
+#ANOVA
+anova_treatment <- aov(spores_g ~ Treatment, data = table)
+{summary(anova_treatment)
+  summary.lm(anova_treatment)}
+
+#posthoc
+
+TUKEY <- TukeyHSD(anova_treatment)
+print(TUKEY)
+
+generate_label_df <- function(TUKEY, variable){
+  
+  # Extract labels and factor levels from Tukey post-hoc
+  Tukey.levels <- TUKEY[[variable]][,4]
+  Tukey.labels <- data.frame(multcompLetters(Tukey.levels)['Letters'])
+  
+  #I need to put the labels in the same order as in the boxplot :
+  Tukey.labels$treatment=rownames(Tukey.labels)
+  Tukey.labels=Tukey.labels[order(Tukey.labels$treatment) , ]
+  return(Tukey.labels)
+}
+
+# Apply the function on my dataset
+LABELS <- generate_label_df(TUKEY , "Treatment")
+names(LABELS)<-c('Letters','Treatment')
+yvalue<-aggregate(spores_g~Treatment, data=table, mean)# obtain letter position for y axis using means
+final<-merge(yvalue,LABELS)
+
+barplot <- ggbarplot(table, x = "Treatment", y = "spores_g", fill = "Treatment",
+                     add = "mean_se",
+                     position = position_dodge(0.8), width = 0.5, ylim = c(0,600000)) +
+  geom_jitter(size = 1, width = 0.25)+
+  scale_y_continuous(name = "spores/gram freshweight", label = number) +
+  geom_text(data = final, aes(y=spores_g, label = Letters),vjust=-2.2,hjust=0.5)+
+  scale_fill_manual(values = c("gnoHpa" = 'dark green', 'gnoHpa+HAM' = 'dark green', 'gnoHpa+resident' = 'dark green')) +
+  theme(legend.position = 'none',
+        axis.title.x=element_blank(),
+        axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
+        axis.text.y=element_text(size = 10),
+        axis.title.y=element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, size = 10))
+print(barplot)
+ggsave(file="filter_exp_2_green_jitter.svg", plot=barplot, width=3, height=3)
