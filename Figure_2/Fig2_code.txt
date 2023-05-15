@@ -346,7 +346,6 @@ qiime tools export \
 #####
 setwd("C:/Users/3378012/surfdrive/UU/Shared_Folder/Manuscript_outline/Second_try_September2019")
 table <- read.table("Enriched_ASVs_Noco2_Cala2_UU_MPIPZ.txt", header = TRUE, sep = "\t")
-table <- read.table("Enriched_ASVs_Noco2_Cala2_UU_MPIPZ_inclProC24.txt", header = TRUE, sep = "\t")
 theme_set(theme_bw())
 table$Treatment <- factor(table$Treatment, levels = c('Mock', 'Noco2', 'Cala2'))
 table$Location <- factor(table$Location, levels = c('UU', 'MPIPZ'))
