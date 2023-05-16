@@ -1,0 +1,62 @@
+#########
+#bioassays
+###########
+#spores
+########
+#Figs 5A and 5B
+#R
+setwd("C:/Users/3378012/surfdrive/UU/Students/Nakisa/results/Bioassays/Bioassays_organize_better_2/R/Spores")
+library(ggplot2)
+library(ggpubr)
+library(ggrepel)
+theme_set(theme_bw())
+####
+#high density and representative only
+table <- read.table("Data_for_scatterplot_spores_highDensity_representative.txt", header = TRUE, sep = "\t")
+table$Category <- factor(table$Category, levels = c("Core", "Other", "Unaffected or depleted"))
+library(ggrepel)
+table$Foldchange <- log(table$Foldchange, 2)
+###
+#Fig. 5B
+plot <- ggplot(table, aes(x = Foldchange, y = minuslog10P, color = Category, label = Name)) +
+  geom_point() +
+  geom_text_repel(size = 2.5) +
+  scale_color_manual(values = c("Core" = "red", "Other" = "red", "Unaffected or depleted" = "blue")) +
+  scale_y_continuous(name="-10log(P)") +
+  scale_x_continuous(name="Log2-fold change Hpa spores/g fresh weight", labels = scales::number_format(accuracy = 0.1)) + #, trans = 'log2'
+  geom_hline(yintercept=1.301, linetype="dashed", color = "black", size=0.5) +
+  geom_vline(xintercept=0, linetype="dashed", color = "black", size=0.5) +
+  theme(#axis.text.x = element_text(angle = 60, hjust = 1),
+  axis.title.x = element_text(size = 10),
+  axis.title.y = element_text(size = 10),
+  axis.text.x = element_text(size = 10),
+  axis.text.y = element_text(size = 10),  
+  legend.position='none')
+print(plot)
+ggsave(file="Spores_scatterplot_twoGroups_HighDensity_representative.svg", plot=plot, width=3, height=2.5)
+####
+######
+#CFU
+######
+setwd("C:/Users/3378012/surfdrive/UU/Students/Nakisa/results/Bioassays/Bioassays_organize_better_2/R/CFU")
+table <- read.table("Data_for_scatterplot_cfu_HighDensity_representative.txt", header = TRUE, sep = "\t")
+table$Category <- factor(table$Category, levels = c("Hpa-associated", "Phyllosphere resident"))
+require(scales)
+###
+#Fig. 5A
+plot <- ggplot(table, aes(x = FoldChange, y = minuslog10P, color = Category, label = Name)) +
+  geom_point() +
+  geom_text_repel(size = 2.5) +
+  scale_color_manual(values = c("Hpa-associated" = "red", "Phyllosphere resident" = "blue")) +
+  scale_y_continuous(name="-10log(P)") +
+  scale_x_continuous(name="CFU fold change in the presence of Hpa", trans='log10', labels = comma) +
+  geom_hline(yintercept=1.301, linetype="dashed", color = "black", size=0.5) +
+  geom_vline(xintercept=1, linetype="dashed", color = "black", size=0.5) +
+  theme(#axis.text.x = element_text(angle = 60, hjust = 1),
+  axis.title.x = element_text(size = 10),
+  axis.title.y = element_text(size = 10),
+  axis.text.x = element_text(size = 10),
+  axis.text.y = element_text(size = 10),  
+  legend.position='none')
+print(plot)
+#ggsave(file="CFU_scatterplot_twoGroups_HighDensity_representative.svg", plot=plot, width=3, height=2.5)
