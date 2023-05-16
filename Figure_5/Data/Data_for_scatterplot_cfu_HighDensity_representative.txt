@@ -1,0 +1,13 @@
+Taxonomy	Asv	Name	Isolate	date	Category	FoldChange	Log10_Foldchange_average_high	minuslog10P	Inoculation_density
+Methylobacterium	15da8	Methylobacterium_15da8	CN-YEM-22	13-jul	Hpa-associated	3.158341908	0.499459143	1.229147988	High
+Arthrobacter	42fbd	Arthrobacter_42fbd	LC-R2A-7	16-sep	Hpa-associated	4.792903445	0.68059868	2.958607315	High
+Asticcacaulis	70cff	Asticcacaulis_70cff	PN-R2A-26	17-mei	Phyllosphere resident	1.560037874	0.193135142	0.769551079	High
+Pseudomonas	7d105	Pseudomonas_7d105	CN2-GNA-2	3-mei	Phyllosphere resident	0.802882223	-0.095348158	0.200659451	High
+Xanthomonas	a0e1a	Xanthomonas_a0e1a	WCS2014-23r	17-sep	Hpa-associated	6.528985634	0.814845713	1.552841969	High
+Acidovorax	a4065	Acidovorax_a4065	CN-YEM-16	17-jun	Hpa-associated	1.749336811	0.242873435	0.886056648	High
+Aeromicrobium	d93fb	Aeromicrobium_d93fb	PM-R2A-31	7-jun	Hpa-associated	7.774697869	0.890683521	1.920818754	High
+Sphingobium	ed6be	Sphingobium_ed6be	4C-17	17-sep	Hpa-associated	4742.514386	3.676008657	4.086186148	High
+Microbacterium	f0c76	Microbacterium_f0c76 1	CN-YEM-23	21-jul	Hpa-associated	13.21447687	1.121049975	5.522878745	High
+Microbacterium	f0c76	Microbacterium_f0c76 2	CN-YEM-9	25-jun	Hpa-associated	5.149185576	0.711738544	4.004364805	High
+Duganella	f90ae	Duganella_f90ae	PN-TSA-11	17-mei	Phyllosphere resident	0.666673327	-0.17608692	0.387216143	High
+Pseudomonas	fb830	Pseudomonas_fb830	PN-YEM-6	17-mei	Phyllosphere resident	0.357619716	-0.446578546	1.443697499	High
