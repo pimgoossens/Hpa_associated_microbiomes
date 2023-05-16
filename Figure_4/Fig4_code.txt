@@ -1,0 +1,424 @@
+####################
+##########
+#All code below is precisely as was performed for (amplicon sequencing) data analysis and is presented to provide insight into which parameters were employed.
+#most of the crucial parameters are also indicated in the materials & methods section of the paper 'Congruent downy mildew-associated microbiomes reduce plant disease and function as transferable resistobiomes'.
+#
+####################
+##########
+#towards Figure 4 (based on 9gen_feature_table_NoNonsense_min5000persample_min160perASV_top99percent.biom and 9gen_metadata.txt)
+#R
+library(dada2)
+library(ShortRead)
+library(Biostrings)
+#setwd("/media/sf_Shared_Folder/9_generation_experiment")
+#path <- "/media/sf_Shared_Folder/9_generation_experiment/fastqs"
+##
+fnFs <- sort(list.files(path, pattern = "R1_001.fastq.gz", full.names = TRUE))
+fnRs <- sort(list.files(path, pattern = "R2_001.fastq.gz", full.names = TRUE))
+##identify and remove primer sequences
+FWD <- "CCTACGGGNGGCWGCAG"  ## CHANGE ME to your forward primer sequence  GTGARTCATCGAATCTTTG
+REV <- "GACTACHVGGGTATCTAATCC"  ## CHANGE ME...
+##check orientation of the primer sequences in the data
+allOrients <- function(primer) {
+#    # Create all orientations of the input sequence
+    require(Biostrings)
+    dna <- DNAString(primer)  # The Biostrings works w/ DNAString objects rather than character vectors
+    orients <- c(Forward = dna, Complement = complement(dna), Reverse = reverse(dna), 
+        RevComp = reverseComplement(dna))
+    return(sapply(orients, toString))  # Convert back to character vector
+}
+FWD.orients <- allOrients(FWD)
+REV.orients <- allOrients(REV)
+#FWD.orients
+fnFs.filtN <- file.path(path, "filtN", basename(fnFs)) # Put N-filterd files in filtN/ subdirectory
+fnRs.filtN <- file.path(path, "filtN", basename(fnRs))
+filterAndTrim(fnFs, fnFs.filtN, fnRs, fnRs.filtN, maxN = 0, matchIDs = TRUE, multithread = TRUE)
+primerHits <- function(primer, fn) {
+    # Counts number of reads in which the primer is found
+    nhits <- vcountPattern(primer, sread(readFastq(fn)), fixed = FALSE)
+    return(sum(nhits > 0))
+}
+rbind(FWD.ForwardReads = sapply(FWD.orients, primerHits, fn = fnFs[[19]]), 
+    FWD.ReverseReads = sapply(FWD.orients, primerHits, fn = fnRs[[19]]), 
+    REV.ForwardReads = sapply(REV.orients, primerHits, fn = fnFs[[19]]), 
+    REV.ReverseReads = sapply(REV.orients, primerHits, fn = fnRs[[19]]))
+##tell R where cutadapt is
+#cutadapt <- "/home/pim/.local/bin/cutadapt"
+#system2(cutadapt, args = "--version") # Run shell commands from R
+path.cut <- file.path(path, "cutadapt")
+if(!dir.exists(path.cut)) dir.create(path.cut)
+path.untrimmed <- file.path(path, "untrimmed")
+if(!dir.exists(path.untrimmed)) dir.create(path.untrimmed)
+fnFs.cut <- file.path(path.cut, basename(fnFs))
+fnRs.cut <- file.path(path.cut, basename(fnRs))
+fnFs.untrimmed <- file.path(path.untrimmed, basename(fnFs))
+fnRs.untrimmed <- file.path(path.untrimmed, basename(fnRs))
+## Trim FWD and the reverse-complement of REV off of R1 (forward reads)
+R1.flags <- paste("-g", FWD)
+## Trim REV and the reverse-complement of FWD off of R2 (reverse reads)
+R2.flags <- paste("-G", REV) 
+## Run Cutadapt
+for(i in seq_along(fnFs)) {
+  system2(cutadapt, args = c(R1.flags, R2.flags, "-n", 2, # -n 2 required to remove FWD and REV from reads
+                             "-o", fnFs.cut[i], "-p", fnRs.cut[i], "--untrimmed-output", fnFs.untrimmed[i], "--untrimmed-paired-output", fnRs.untrimmed[i], # output files ######
+                             fnFs[i], fnRs[i])) # input files
+}
+##sanity check
+rbind(FWD.ForwardReads = sapply(FWD.orients, primerHits, fn = fnFs.cut[[21]]), 
+    FWD.ReverseReads = sapply(FWD.orients, primerHits, fn = fnRs.cut[[21]]), 
+    REV.ForwardReads = sapply(REV.orients, primerHits, fn = fnFs.cut[[21]]), 
+    REV.ReverseReads = sapply(REV.orients, primerHits, fn = fnRs.cut[[21]]))
+##remove all unnecessary strings from sample names
+for i in *000.tga
+do
+    mv "$i" "`echo $i | sed 's/000//'`"
+done
+####now move to qiime2 and import all the successfully trimmed fastq files into demux
+##subdivide trimmed fastqs into 4 folders first (batch1-4)
+##batch1
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path fastqs/cutadapt/batch_1 \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path 9gen_demux_paired_end_batch_1.qza
+##summarize
+qiime demux summarize \
+  --i-data 9gen_demux_paired_end_batch_1.qza \
+  --o-visualization 9gen_demux_paired_end_batch_1
+#for DADA2, batch1 fw trunc 268 and rv trunc 206 seems ok
+#batch2
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path fastqs/cutadapt/batch_2 \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path 9gen_demux_paired_end_batch_2.qza
+#summarize
+qiime demux summarize \
+  --i-data 9gen_demux_paired_end_batch_2.qza \
+  --o-visualization 9gen_demux_paired_end_batch_2
+for DADA2, batch2 fw trunc 268 and rv trunc 206 seems ok
+#batch3
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path fastqs/cutadapt/batch_3 \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path 9gen_demux_paired_end_batch_3.qza
+#summarize
+qiime demux summarize \
+  --i-data 9gen_demux_paired_end_batch_3.qza \
+  --o-visualization 9gen_demux_paired_end_batch_3
+#for DADA2, batch3 fw trunc 268 and rv trunc 206 seems ok
+#batch4
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path fastqs/cutadapt/batch_4 \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path 9gen_demux_paired_end_batch_4.qza
+#summarize
+qiime demux summarize \
+  --i-data 9gen_demux_paired_end_batch_4.qza \
+  --o-visualization 9gen_demux_paired_end_batch_4
+#for DADA2, batch2 fw trunc 268 and rv trunc 206 seems ok
+#DADA2 all batches fw trunc 268 and rv trunc 206
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs 9gen_demux_paired_end_batch_1.qza \
+  --o-table 9gen_batch_1_feature_table_maxee2 \
+  --o-representative-sequences 9gen_batch_1_rep_seqs_maxee2 \
+  --p-trunc-len-f 268 \
+  --p-trunc-len-r 206 \
+  --p-max-ee 2 \
+  --p-n-threads 0 \
+  --o-denoising-stats 9gen_denoise_batch1_maxee2 \
+  --verbose
+#batch2
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs 9gen_demux_paired_end_batch_2.qza \
+  --o-table 9gen_batch_2_feature_table_maxee2 \
+  --o-representative-sequences 9gen_batch_2_rep_seqs_maxee2 \
+  --p-trunc-len-f 268 \
+  --p-trunc-len-r 206 \
+  --p-max-ee 2 \
+  --p-n-threads 0 \
+  --o-denoising-stats 9gen_denoise_batch2_maxee2 \
+  --verbose
+##batch3
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs 9gen_demux_paired_end_batch_3.qza \
+  --o-table 9gen_batch_3_feature_table_maxee2 \
+  --o-representative-sequences 9gen_batch_3_rep_seqs_maxee2 \
+  --p-trunc-len-f 268 \
+  --p-trunc-len-r 206 \
+  --p-max-ee 2 \
+  --p-n-threads 0 \
+  --o-denoising-stats 9gen_denoise_batch3_maxee2 \
+  --verbose
+##batch4
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs 9gen_demux_paired_end_batch_4.qza \
+  --o-table 9gen_batch_4_feature_table_maxee2 \
+  --o-representative-sequences 9gen_batch_4_rep_seqs_maxee2 \
+  --p-trunc-len-f 268 \
+  --p-trunc-len-r 206 \
+  --p-max-ee 2 \
+  --p-n-threads 0 \
+  --o-denoising-stats 9gen_denoise_batch4_maxee2 \
+  --verbose
+##merge tables and rep-seqs
+qiime feature-table merge \
+  --i-tables 9gen_batch_1_feature_table_maxee2.qza \
+  --i-tables 9gen_batch_2_feature_table_maxee2.qza \
+  --i-tables 9gen_batch_3_feature_table_maxee2.qza \
+  --i-tables 9gen_batch_4_feature_table_maxee2.qza \
+  --o-merged-table 9gen_paired_end_all_feature_table
+##
+##
+##merge all rep-seqs files
+qiime feature-table merge-seqs \
+  --i-data 9gen_batch_1_rep_seqs_maxee2.qza \
+  --i-data 9gen_batch_2_rep_seqs_maxee2.qza \
+  --i-data 9gen_batch_3_rep_seqs_maxee2.qza \
+  --i-data 9gen_batch_4_rep_seqs_maxee2.qza \
+  --o-merged-data 9gen_paired_end_all_rep_seqs
+##
+##tabulate all rep-seqs
+qiime feature-table tabulate-seqs \
+  --i-data 9gen_paired_end_all_rep_seqs.qza \
+  --o-visualization 9gen_paired_end_all_rep_seqs.qzv
+##
+#For taxonomic assignment, used QIIME compatible 132 release, 99% clustering identity, 7-level RDP-compatible consensus taxonomies
+#V3V4 extracted from fasta using primers sequences: CCTACGGGNGGCWGCAG (fw), GACTACHVGGGTATCTAATCC (rv) 
+qiime feature-classifier classify-consensus-vsearch \
+  --i-query 9gen_paired_end_all_rep_seqs.qza \
+  --i-reference-reads 99_otus_16S_V3V4.qza \
+  --i-reference-taxonomy ref-taxonomy.qza \
+  --p-threads 0 \
+  --o-classification 9gen_paired_end_all_rep_seqs_assigned_taxonomy
+##filter out Arabidopsis reads and unassigned
+## filter out D_4__Mitochondria,D_2__Chloroplast,Unassigned
+qiime taxa filter-table \
+  --i-table 9gen_paired_end_all_feature_table.qza \
+  --i-taxonomy 9gen_paired_end_all_rep_seqs_assigned_taxonomy.qza \
+  --p-exclude D_4__Mitochondria,D_2__Chloroplast,Unassigned \
+  --o-filtered-table 9gen_paired_end_feature_table_NoNonsense
+##filter repseqs based on feature table
+qiime feature-table filter-seqs \
+  --i-data 9gen_paired_end_all_rep_seqs.qza \
+  --i-table  9gen_paired_end_feature_table_NoNonsense.qza \
+  --o-filtered-data 9gen_paired_end_rep_seqs_NoNonsense
+##tabulate feature sequences
+qiime feature-table tabulate-seqs \
+  --i-data 9gen_paired_end_rep_seqs_NoNonsense.qza \
+  --o-visualization 9gen_paired_end_rep_seqs_NoNonsense.qzv
+##
+##filter out low read-depth samples
+qiime feature-table filter-samples \
+  --i-table 9gen_paired_end_feature_table_NoNonsense.qza \
+  --p-min-frequency 5000 \
+  --o-filtered-table 9gen_feature_table_NoNonsense_min5000persample
+##summarize table
+qiime feature-table summarize \
+  --i-table 9gen_feature_table_NoNonsense_min5000persample.qza \
+  --m-sample-metadata-file 9gen_metadata.txt \
+  --o-visualization 9gen_feature_table_NoNonsense_min5000persample.qzv
+##filter repseqs based on feature table
+qiime feature-table filter-seqs \
+  --i-data 9gen_paired_end_all_rep_seqs.qza \
+  --i-table  9gen_feature_table_NoNonsense_min5000persample.qza \
+  --o-filtered-data 9gen_feature_table_NoNonsense_min5000persample_rep_seqs
+##make new taxonomy file based on this table
+qiime feature-classifier classify-consensus-vsearch \
+  --i-query 9gen_feature_table_NoNonsense_min5000persample_rep_seqs.qza \
+  --i-reference-reads 99_otus_16S_V3V4.qza \
+  --i-reference-taxonomy ref-taxonomy.qza \
+  --p-threads 0 \
+  --o-classification 9gen_feature_table_NoNonsense_min5000persample_rep_seqs_assigned_taxonomy
+##filter low abundance ASVs from table in excel after export of biom and taxonomy files, then move to R for PCoAs and DESeq2 analyses
+#export biom
+qiime tools export \
+  --input-path 9gen_feature_table_NoNonsense_min5000persample.qza \
+  --output-path 9gen_feature_table_NoNonsense_min5000persample
+#export taxonomies
+qiime tools export \
+  --input-path 9gen_feature_table_NoNonsense_min5000persample_rep_seqs_assigned_taxonomy.qza \
+  --output-path 9gen_feature_table_NoNonsense_min5000persample_rep_seqs_assigned_taxonomy
+##First merge Biom and taxonomy files in excel, then identify 1% lowest abundance cut-off
+biom convert -i 9gen_feature_table_NoNonsense_min5000persample.biom -o 9gen_feature_table_NoNonsense_min5000persample.txt --to-tsv
+#save ASV table with taxonomies as text (taxonomy column as last column named 'taxonomy') as .txt, convert back to .biom
+biom convert -i 9gen_feature_table_NoNonsense_min5000persample_min160perASV_top99percent.txt \
+  -o 9gen_feature_table_NoNonsense_min5000persample_min160perASV_top99percent.biom \ #supplied at https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_4/Data
+  --to-hdf5 \
+  --table-type="OTU table" \
+  --process-obs-metadata taxonomy
+##################
+#in R
+##################
+library(phyloseq)
+library(ggplot2)
+library(ggpubr)
+library(vegan)
+library(DESeq2)
+library(dplyr)
+theme_set(theme_bw())
+####
+###
+#G9 PCoA Fig. 4A
+metadata <- import_qiime_sample_data("9gen_metadata.txt")
+ASV_table <- import_biom(BIOMfilename = "9gen_feature_table_NoNonsense_min5000persample_min160perASV_top99percent.biom")
+ASV_table_meta <- merge_phyloseq(ASV_table, metadata)
+colnames(tax_table(ASV_table_meta)) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
+samples_relative <- transform_sample_counts(ASV_table_meta, function(x) x/sum(x))
+#for G9, also including Untreated
+G9_all = subset_samples(ASV_table_meta, Generation == "G9")
+G9_all_relative = transform_sample_counts(G9_all, function(x) x/sum(x))
+G9_all_relative.ord <- ordinate(G9_all_relative, "PCoA", "bray") #unweighted jaccard requires binary=TRUE
+G9_all_relative_bray_PCoA_1 = plot_ordination(G9_all_relative, G9_all_relative.ord, type="samples", color="Treatment") #, shape="Generation") #, axes = 2:3)
+print(G9_all_relative_bray_PCoA_1)
+G9_all_relative_bray_PCoA_2 <- G9_all_relative_bray_PCoA_1 + 
+  stat_ellipse() +
+  #ggtitle("Generation 9") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  #facet_grid(~ Location) +
+  theme(legend.position = "none",
+  panel.border = element_rect(colour = "black", fill=NA, size=0.75),
+  axis.title.y=element_text(size=10),
+  axis.text.y=element_text(size=10),
+  axis.title.x=element_text(size=10),
+  axis.text.x=element_text(size=10)) +
+  scale_color_manual(values=c("Cala2" = "#00FF00", "Noco2" = "#FF9900", "Hpa-free" = "#0000FF", "Untreated" = "#000000")) #+ #, "#66CC33", "lightblue", "blue", "#FF33CC")) #+
+  #geom_hline(yintercept=-0.075, linetype="dashed", color = "grey", size=2) +
+  #annotate(geom="text", x=0.1, y=0.1, label="MPIPZ", color="grey", size = 7) +
+  #annotate(geom="text", x=0.1, y=-0.25, label="UU", color="grey", size = 7) +
+  #geom_point(aes(fill=Treatment), pch=21) #+
+  #stat_ellipse()
+print(G9_all_relative_bray_PCoA_2)
+ggsave(file="G9_PCoA_Bray_publication.svg", plot=G9_all_relative_bray_PCoA_2, width=3, height=2)
+##################################
+#make biplot based purely on the relative abundance table (qiime2 only accepts count tables for generation of distance matrices)
+#for passage 9, without the untreated group
+#generate distance matrix in R, based on ASV_table_meta_relative_NoUntreated, export and adjust so it is importable in qiime2
+#make pcoa based on that distance matrix
+#project ASV contribution over that pcoa based on the relative abundance table (top99% noNonsense min5000 table)
+G9_No_untreated = subset_samples(ASV_table_meta, Treatment != "Untreated" & Generation == "G9")
+G9_No_untreated_relative = transform_sample_counts(G9_No_untreated, function(x) x/sum(x))
+G9_ASV = t(as(otu_table(G9_No_untreated_relative),"matrix"))
+G9_ASV_bray_noUntreated <- as.matrix(vegdist(G9_ASV, method="bray"))
+#write.csv(G9_ASV_bray_noUntreated, file = "G9_ASV_bray_noUntreated.csv")
+#distance matrices converted to tab delimited in notepad++
+#in qiime2 import distance matrix
+qiime tools import \
+  --input-path G9_ASV_bray_noUntreated.txt \
+  --output-path G9_ASV_bray_noUntreated.qza \
+  --type 'DistanceMatrix'
+##use this distanceMatrix.qza with G9_9gen_feature_table_NoNonsense_min5000persample_min160perASV_NoUntreated.qza as basis
+##first convert to relative frequencies
+qiime feature-table filter-samples \
+  --i-table 9gen_feature_table_NoNonsense_min5000persample_min160perASV.qza \ #supplied at https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_4/Data
+  --m-metadata-file 9gen_metadata.txt \ #supplied at https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_4/Data
+  --p-where "Treatment='Untreated'" \
+  --p-exclude-ids \
+  --o-filtered-table 9gen_feature_table_NoNonsense_min5000persample_min160perASV_NoUntreated
+qiime feature-table filter-samples \
+  --i-table 9gen_feature_table_NoNonsense_min5000persample_min160perASV_NoUntreated.qza \
+  --m-metadata-file 9gen_metadata.txt \
+  --p-where "Generation='G9'" \
+  --o-filtered-table G9_9gen_feature_table_NoNonsense_min5000persample_min160perASV_NoUntreated
+qiime feature-table relative-frequency \
+  --i-table G9_9gen_feature_table_NoNonsense_min5000persample_min160perASV_NoUntreated.qza \
+  --o-relative-frequency-table G9_9gen_feature_table_NoNonsense_min5000persample_min160perASV_NoUntreated_rel_ab
+#G9
+#make pcoa based on distanceMatrix
+qiime diversity pcoa \
+  --i-distance-matrix G9_ASV_bray_noUntreated.qza \
+  --o-pcoa G9_ASV_bray_noUntreated_pcoa
+##biplot
+qiime diversity pcoa-biplot \
+  --i-pcoa G9_ASV_bray_noUntreated_pcoa.qza \
+  --i-features G9_9gen_feature_table_NoNonsense_min5000persample_min160perASV_NoUntreated_rel_ab.qza \
+  --o-biplot G9_ASV_bray_noUntreated_pcoa_biplot
+qiime emperor biplot \
+  --i-biplot G9_ASV_bray_noUntreated_pcoa_biplot.qza \
+  --m-sample-metadata-file 9gen_metadata.txt \
+  --p-number-of-features 10 \
+  --o-visualization G9_ASV_bray_noUntreated_pcoa_biplot_emperor
+#export ordination files from biplot qza's, use excel to select top 5 contributors to PC1 and PC2 (may overlap), make text file of that
+#make biplot in R ggplot2
+library(ggplot2)
+library(grid)
+library(ggrepel)
+theme_set(theme_bw())
+G9_biplot_species_table <- read.table("G9_NoUntreated_biplot_species_coords.txt", header=TRUE) #supplied at https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_4/Data
+G9_biplot_species_table$Type <- factor(G9_biplot_species_table$Type, levels = c('Sample', 'ASV'))
+#####
+#basis for Fig. 4B
+G9_plot_2 <- ggplot() +
+  #facet_grid(~Type ) +
+  geom_point(data = G9_biplot_species_table, aes(x = Axis1, y = Axis2, color = Treatment)) +
+  theme(legend.position='none',
+  panel.border = element_rect(colour = "black", fill=NA, size=0.75),
+  axis.title.y=element_text(size=10),
+  axis.text.y=element_text(size=10),
+  axis.title.x=element_text(size=10),
+  axis.text.x=element_text(size=10)) +
+  scale_color_manual(values=c("Cala2" = "#00FF00", "Noco2" = "#FF9900", "No_Hpa" = "#0000FF")) +
+  geom_segment(data = G9_biplot_species_table, aes(x = 0, y = 0, xend = X_end*0.8, yend = Y_end*0.8), arrow = arrow(length=unit(2, "mm")), colour = "black", size = 0.25)
+print(G9_plot_2)
+#ggsave(file="G9_biplot_publication.svg", plot=G9_plot_2, width=3, height=2)
+#annotate figure with stats and ASVs from G9_ASV_bray_noUntreated_pcoa_biplot_emperor.qzv (supplied at https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_4/Data)
+###########
+######
+#DESeq2
+###
+###########
+#Now test Hpa vs No_Hpa in G9 (exluding untreated samples)
+G9_ASV_table_meta_Hpa = subset_samples(ASV_table_meta, Generation == "G9" & Treatment != "Untreated")
+DESeq2_G9_Hpa = phyloseq_to_deseq2(G9_ASV_table_meta_Hpa, ~Hpa_presence)
+## work around for error: every gene contains at least one zero, cannot compute log geometric means
+# calculate geometric means prior to estimate size factors
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
+geoMeans = apply(counts(DESeq2_G9_Hpa), 1, gm_mean)
+DESeq2_G9_Hpa = estimateSizeFactors(DESeq2_G9_Hpa, geoMeans = geoMeans)
+DESeq2_G9_Hpa = DESeq(DESeq2_G9_Hpa, fitType="local")
+#shrink log fold changes
+resultsNames(DESeq2_G9_Hpa)
+resLFC_G9_Noco_NoHpa <- lfcShrink(DESeq2_G9_Hpa, coef="Hpa_presence_Yes_vs_No")
+alpha = 0.05
+sigtab_resLFC_G9_Hpa = resLFC_G9_Noco_NoHpa[which(resLFC_G9_Noco_NoHpa$padj < alpha), ]
+sigtab_resLFC_G9_Hpa = cbind(as(sigtab_resLFC_G9_Hpa, "data.frame"), as(tax_table(G9_ASV_table_meta_Hpa)[rownames(sigtab_resLFC_G9_Hpa), ], "matrix"))
+head(sigtab_resLFC_G9_Hpa)
+dim(sigtab_resLFC_G9_Hpa)
+#write.csv(sigtab_resLFC_G9_Hpa, file = "sigtab_G9_Noco2Cala2_vs_NoHpa.csv")
+#sigtab_G9_Noco2Cala2_vs_NoHpa.csv was annotated in Noco2_Cala2_vs_No_Hpa_diffAbundance_ASVs_2.txt for visualization of differentially abundant ASVs in barplots
+######
+#stacked barplot of differentially abundant ASVs in Noco2+Cala2 vs Hpa-free in all samples from passage 9
+#table with differentially abundant ASVs:
+##
+#subset samples from passage 9
+G9_ASV_table_meta = subset_samples(ASV_table_meta, Generation == "G9")
+G9_ASV_table_meta_relative = transform_sample_counts(G9_ASV_table_meta, function(x) x/sum(x))
+table2 <- read.table("Noco2_Cala2_vs_No_Hpa_diffAbundance_ASVs_2.txt", header = TRUE, sep = "\t")
+Long_G9_ASV_table_meta_relative <- G9_ASV_table_meta_relative %>%
+  psmelt() # Melt to long format
+Long_G9_ASV_table_meta_relative$Abundance = Long_G9_ASV_table_meta_relative$Abundance * 100
+Long_G9_ASV_table_meta_relative_2 <- left_join(Long_G9_ASV_table_meta_relative, table2, by = "OTU")
+Long_G9_ASV_table_meta_relative_2$Direction[is.na(Long_G9_ASV_table_meta_relative_2$Direction)] <- "Not_affected"
+Long_G9_ASV_table_meta_relative_3 <- Long_G9_ASV_table_meta_relative_2
+Long_G9_ASV_table_meta_relative_3$Treatment <- factor(Long_G9_ASV_table_meta_relative_3$Treatment, levels = c('Untreated', 'Hpa-free', 'Noco2', 'Cala2'))
+Long_G9_ASV_table_meta_relative_3$Direction <- factor(Long_G9_ASV_table_meta_relative_3$Direction, levels = c('Enriched', 'Not_affected', 'Depleted'))
+#####
+#Fig. 4C
+stacked_barplot <- ggplot(Long_G9_ASV_table_meta_relative_3, aes(x = Line, y = Abundance, fill = Direction)) + 
+  facet_grid(~Treatment, switch="both") +
+  geom_bar(stat = "identity", color = '#333333') +
+  scale_y_continuous(name = "Abundance (%)") +
+  scale_fill_manual(values = c("Enriched" = "red", "Depleted" = "blue", "Not_affected" = "#FAF9F6")) +
+  theme(axis.title.x = element_blank(),
+  axis.text.x = element_blank(),
+  legend.position='none',
+  strip.text.x = element_text(size = 10),
+  axis.ticks.x=element_blank(),
+  axis.title.y=element_text(size=10),
+  axis.text.y=element_text(size=10))
+print(stacked_barplot)
+#ggsave(file="stacked_barplot_NoLegend_25diffAbundantASVs_3colors_separateSamples.svg", plot=stacked_barplot, width=6.1, height=2.5)
