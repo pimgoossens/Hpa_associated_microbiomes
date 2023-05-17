@@ -1,3 +1,45 @@
+#Fig. 6A
+theme_set(theme_bw())
+table <- read.table("Supporting_data_figure_6A.csv", header = TRUE, sep = ";")
+table$Treatment_conditioning_population <- factor(table$Treatment_conditioning_population, levels = c('Mock', 'Hpa', 'gnoHpa'))
+
+DunnettTest(x=subset_table$Spores_g, g=subset_table$Treatment_conditioning_population)
+
+barplot <- ggbarplot(subset_table, x = "Treatment_conditioning_population", y = "Spores_g", fill = "Treatment_conditioning_population",
+                     add = "mean_se",
+                     position = position_dodge(0.8), width = 0.5, ylim = c(0,450000)) +
+  scale_y_continuous(name = "spores/gram freshweight", labels = number) +
+  geom_jitter(size = 1.5, width = 0.25)+
+  scale_fill_manual(values=c(Mock = "dark green", Hpa = "dark green", gnoHpa = "dark green")) +
+  theme(legend.position = 'none',
+        axis.title.x=element_blank(),
+        axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
+        axis.text.y=element_text(size = 10),
+        axis.title.y=element_text(size = 10, vjust = 2),
+        plot.title = element_text(hjust = 0.5, size = 10))
+print(barplot)
+ggsave(file="barplot_spores_g_green_Jitter.svg", plot=barplot, width=4, height=3.75)
+
+#Fig. 6B
+theme_set(theme_bw())
+table <- read.table("Supporting_data_figure_6B.csv", header = TRUE, sep = ";")
+table$Treatment<- factor(table$Treatment, levels = c('Col-0_Mock_Hpa', 'Col-0_Hpa_Hpa', 'Col-0_RPP5_Mock_Hpa', 'Col-0_RPP5_Hpa_Hpa'))
+
+barplot <- ggbarplot(table, x = "Treatment", y = "Spores_g", fill = "Treatment",
+                     add = "mean_se",
+                     position = position_dodge(0.8), width = 0.5, ylim = c(0,1200000)) +
+  scale_y_continuous(name = "spores per gram freshweight", labels = number) +
+  geom_jitter(size = 1.5, width = 0.25)+
+  scale_fill_manual(values=c(Col-0_Mock_Hpa = "dark green", Col-0_Hpa_Hpa = "dark green", Col-0_RPP5_Mock_Hpa = "dark green", Col-0_RPP5_Hpa_Hpa = "dark green")) +
+  theme(legend.position = 'none',
+        axis.title.x=element_blank(),
+        axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
+        axis.text.y=element_text(size = 10),
+        axis.title.y=element_text(size = 10, vjust = 2),
+        plot.title = element_text(hjust = 0.5, size = 10))
+print(barplot)
+ggsave(file="barplot_spores_g_Jitter.svg", plot=barplot, width=4, height=3.75)
+
 ####################
 ##########
 #All code below is precisely as was performed for (amplicon sequencing) data analysis and is presented to provide insight into which parameters were employed.
@@ -455,49 +497,8 @@ dim(sigtab_samples_phyllo_G2noHpa_G1GnoHpa)
 #specified in DESeq2_G1_Phyllo_HpaEnriched.txt on https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_6/Data
 ####################
 ##########
-#Fig. 6A
-theme_set(theme_bw())
-table <- read.table("Supporting_data_figure_6A.csv", header = TRUE, sep = ";")
-table$Treatment_conditioning_population <- factor(table$Treatment_conditioning_population, levels = c('Mock', 'Hpa', 'gnoHpa'))
 
-DunnettTest(x=subset_table$Spores_g, g=subset_table$Treatment_conditioning_population)
-
-barplot <- ggbarplot(subset_table, x = "Treatment_conditioning_population", y = "Spores_g", fill = "Treatment_conditioning_population",
-                     add = "mean_se",
-                     position = position_dodge(0.8), width = 0.5, ylim = c(0,450000)) +
-  scale_y_continuous(name = "spores/gram freshweight", labels = number) +
-  geom_jitter(size = 1.5, width = 0.25)+
-  scale_fill_manual(values=c(Mock = "dark green", Hpa = "dark green", gnoHpa = "dark green")) +
-  theme(legend.position = 'none',
-        axis.title.x=element_blank(),
-        axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
-        axis.text.y=element_text(size = 10),
-        axis.title.y=element_text(size = 10, vjust = 2),
-        plot.title = element_text(hjust = 0.5, size = 10))
-print(barplot)
-ggsave(file="barplot_spores_g_green_Jitter.svg", plot=barplot, width=4, height=3.75)
-
-#Fig. 6B
-theme_set(theme_bw())
-table <- read.table("Supporting_data_figure_6B.csv", header = TRUE, sep = ";")
-table$Treatment<- factor(table$Treatment, levels = c('Col-0_Mock_Hpa', 'Col-0_Hpa_Hpa', 'Col-0_RPP5_Mock_Hpa', 'Col-0_RPP5_Hpa_Hpa'))
-
-barplot <- ggbarplot(table, x = "Treatment", y = "Spores_g", fill = "Treatment",
-                     add = "mean_se",
-                     position = position_dodge(0.8), width = 0.5, ylim = c(0,1200000)) +
-  scale_y_continuous(name = "spores per gram freshweight", labels = number) +
-  geom_jitter(size = 1.5, width = 0.25)+
-  scale_fill_manual(values=c(Col-0_Mock_Hpa = "dark green", Col-0_Hpa_Hpa = "dark green", Col-0_RPP5_Mock_Hpa = "dark green", Col-0_RPP5_Hpa_Hpa = "dark green")) +
-  theme(legend.position = 'none',
-        axis.title.x=element_blank(),
-        axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
-        axis.text.y=element_text(size = 10),
-        axis.title.y=element_text(size = 10, vjust = 2),
-        plot.title = element_text(hjust = 0.5, size = 10))
-print(barplot)
-ggsave(file="barplot_spores_g_Jitter.svg", plot=barplot, width=4, height=3.75)
-
-#Fig. 6 amplicon sequencing data
+#Fig. 6C-H amplicon sequencing data
 
 metadata <- import_qiime_sample_data("Metadata.txt")
 ASV_table <- import_biom(BIOMfilename = "Phyloseq.biom")
@@ -505,11 +506,6 @@ ASV_table_meta <- merge_phyloseq(ASV_table, metadata)
 colnames(tax_table(ASV_table_meta)) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
 samples_relative = transform_sample_counts(ASV_table_meta, function(x) x/sum(x))
 theme_set(theme_bw())
-
-
-
-INSERT DESEQ ON HOW WE GET TO HAM LIST
-
 
 Long_samples_relative <- samples_relative %>%
   psmelt() # Melt to long format
