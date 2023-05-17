@@ -40,6 +40,8 @@ barplot <- ggbarplot(table, x = "Treatment", y = "Spores_g", fill = "Treatment",
 print(barplot)
 ggsave(file="barplot_spores_g_Jitter.svg", plot=barplot, width=4, height=3.75)
 
+##t.test was performed in excel, wiht the formula =T.TEST(selection1;selection2;1;2).
+
 ####################
 ##########
 #All code below is precisely as was performed for (amplicon sequencing) data analysis and is presented to provide insight into which parameters were employed.
@@ -545,6 +547,8 @@ taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Ge
 print(taxbarplot)
 ggsave(file="Phyllo_tax_barplot_G1_OTU.svg", plot=taxbarplot, width=6, height=4.6)
 
+##t.test with fdr correction was performed in excel, wiht the formula =T.TEST(selection1;selection2;1;2). For fdr correction, t.test output per comparion were ranked, multiplied by the total amount of comparisons and devided by the rank.
+
 #Fig. 6D
 G1_rhizo <- subset(Long_samples_relative_3, Sample_Type == "Rhizosphere" & Generation == "Generation_1")
 G1_rhizo <- subset(G1_rhizo, Sample != "R-G-G1-4")
@@ -574,6 +578,8 @@ taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Ge
 print(taxbarplot)
 ggsave(file="Rhizo_tax_barplot_G1_OTU.svg", plot=taxbarplot, width=6, height=4.6)
 
+##t.test with fdr correction was performed in excel, wiht the formula =T.TEST(selection1;selection2;1;2). For fdr correction, t.test output per comparion were ranked, multiplied by the total amount of comparisons and devided by the rank.
+
 #Fig. 6E
 G2_phyllo <- subset(Long_samples_relative_3, Generation == "Generation_2" & Sample_Type == "Phyllosphere")
 G2_phyllo <- subset(G2_phyllo, Treatment_generation_1 != "GnoHpa")
@@ -601,6 +607,11 @@ taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Ge
 print(taxbarplot)
 ggsave(file="Phyllo_tax_barplot_G2_Inheritance_OTU.svg", plot=taxbarplot, width=6, height=4.6)
 
+anova_treatment <- aov(mean_abundance ~ Treatment_generation_1, data = selection)
+{summary(anova_treatment)
+  summary.lm(anova_treatment)}
+##t.test with fdr correction was performed in excel, wiht the formula =T.TEST(selection1;selection2;1;2). For fdr correction, t.test output per comparion were ranked, multiplied by the total amount of comparisons and devided by the rank.
+
 #Fig. 6F
 G2_rhizo <- subset(Long_samples_relative_3, Generation == "Generation_2" & Sample_Type == "Rhizosphere")
 G2_rhizo <- subset(G2_rhizo, Treatment_generation_1 != "GnoHpa")
@@ -627,6 +638,11 @@ taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Ge
         axis.text.y=element_text(size=20))
 print(taxbarplot)
 ggsave(file="rhizo_tax_barplot_G2_inheritance_OTU.svg", plot=taxbarplot, width=6, height=4.6)
+
+anova_treatment <- aov(mean_abundance ~ Treatment_generation_1, data = selection)
+{summary(anova_treatment)
+  summary.lm(anova_treatment)}
+ ##t.test with fdr correction was performed in excel, wiht the formula =T.TEST(selection1;selection2;1;2). For fdr correction, t.test output per comparion were ranked, multiplied by the total amount of comparisons and devided by the rank.
 
 #Fig. 6G
 
@@ -656,6 +672,8 @@ taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Ge
 print(taxbarplot)
 ggsave(file="Phyllo_tax_barplot_G2_Recruitment_OTU.svg", plot=taxbarplot, width=6, height=4.6)
 
+##t.test with fdr correction was performed in excel, wiht the formula =T.TEST(selection1;selection2;1;2). For fdr correction, t.test output per comparion were ranked, multiplied by the total amount of comparisons and devided by the rank.
+
 #Fig. 6H
 G2_rhizo <- subset(Long_samples_relative_3, Generation == "Generation_2" & Sample_Type == "Rhizosphere")
 G2_rhizo <- subset(G2_rhizo, Treatment_generation_1 != "Hpa")
@@ -683,3 +701,4 @@ taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Ge
 print(taxbarplot)
 ggsave(file="rhizo_tax_barplot_G2_Recruitment_OTU.svg", plot=taxbarplot, width=6, height=4.6)
   
+##t.test with fdr correction was performed in excel, wiht the formula =T.TEST(selection1;selection2;1;2). For fdr correction, t.test output per comparion were ranked, multiplied by the total amount of comparisons and devided by the rank.
