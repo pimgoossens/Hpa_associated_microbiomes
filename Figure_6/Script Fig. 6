@@ -1,5 +1,460 @@
 ####################
 ##########
+#All code below is precisely as was performed for (amplicon sequencing) data analysis and is presented to provide insight into which parameters were employed.
+#most of the crucial parameters are also indicated in the materials & methods section of the paper 'Congruent downy mildew-associated microbiomes reduce plant disease and function as transferable resistobiomes'.
+#
+####################
+###All samples from SBL experiment (Fig. 6) were sequenced twice (16S novaseq), output from both runs were compared (Mantel tests on Bray-Curtis and Jaccard dissimilarity matrices based on each run), approved and merged
+#####
+#run1
+#####
+#original files in /media/wolf2/TeamBerendsen/Sietske/Nanuq211004
+cd /media/wolf2/TeamBerendsen/Sietske/Nanuq211004
+cp *\.P\-* /media/wolf2/TeamBerendsen/PimJelle/SBL/fastqs/
+#etc.. same types of patterns for rest (S, R, F instead of P)
+#main directory /media/wolf2/TeamBerendsen/PimJelle/SBL/
+#then move 16S files to All_16S folder
+cd /media/wolf2/TeamBerendsen/PimJelle/SBL/fastqs/
+mv *_16S_* /media/wolf2/TeamBerendsen/PimJelle/SBL/fastqs/All_16S/
+cd /media/wolf2/TeamBerendsen/PimJelle/SBL/fastqs/All_16S/
+rename  's/_R1/_L001_R1_001/' *
+rename  's/_R2/_L001_R2_001/' *
+rename  's/NS\.1662\.002\.FLD_ill_[0-9][0-9][0-9]_i7---IDT_i5_[0-9][0-9]\.//' *
+rename  's/NS\.1662\.002\.FLD_ill_[0-9][0-9][0-9]_i7---IDT_i5_[0-9]\.//' *
+mv 362352529.zip /media/wolf2/TeamBerendsen/PimJelle/SBL/
+cd ..
+conda activate qiime2-2019.7
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path fastqs \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path SBL_JellePim_16S.qza
+#summarize
+qiime demux summarize \
+  --i-data SBL_JellePim_16S.qza \
+  --o-visualization SBL_JellePim_16S
+###
+#fw seqs start with CCTACGGGAGGCAGCAG, rv reads start with GACTACTAGGGTATCTAATCC
+#cut off primers
+qiime cutadapt trim-paired \
+  --i-demultiplexed-sequences SBL_JellePim_16S.qza \
+  --p-cores 6 \
+  --p-front-f CCTACGGGNGGCWGCAG \
+  --p-front-r GACTACHVGGGTATCTAATCC \
+  --p-discard-untrimmed \
+  --o-trimmed-sequences SBL_JellePim_16S_trimmed.qza \
+  --verbose
+qiime demux summarize \
+  --i-data SBL_JellePim_16S_trimmed.qza \
+  --o-visualization SBL_JellePim_16S_trimmed
+#dada2 without truncating
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs SBL_JellePim_16S_trimmed.qza \
+  --o-table SBL_JellePim_16S_trimmed_feature_table \
+  --o-representative-sequences SBL_JellePim_16S_trimmed_rep_seqs \
+  --p-trunc-len-f 0 \
+  --p-trunc-len-r 0 \
+  --p-max-ee-f 2 \
+  --p-max-ee-r 2 \
+  --p-n-threads 8 \
+  --o-denoising-stats SBL_JellePim_16S_trimmed_denoiseStats \
+  --verbose
+#
+qiime feature-classifier classify-consensus-vsearch \
+  --i-query SBL_JellePim_16S_trimmed_rep_seqs.qza \
+  --i-reference-reads 99_otus_16S_V3V4.qza \
+  --i-reference-taxonomy ref-taxonomy.qza \
+  --p-threads 8 \
+  --o-classification SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy
+#filter out Arabidopsis reads and unassigned
+# filter out D_4__Mitochondria,D_2__Chloroplast,Unassigned
+qiime taxa filter-table \
+  --i-table SBL_JellePim_16S_trimmed_feature_table.qza \
+  --i-taxonomy SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy.qza \
+  --p-exclude D_4__Mitochondria,D_2__Chloroplast,Unassigned \
+  --o-filtered-table SBL_JellePim_16S_trimmed_feature_table_NoNonsense
+#####
+#error with white spaces in tax file
+#export taxonomy file, remove white spaces, re-import
+qiime tools export \
+  --input-path SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy.qza \
+  --output-path SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy
+cd SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy
+cat taxonomy.tsv | sed 's/ //g' > taxonomy_fixed.tsv
+sed '1d' taxonomy_fixed.tsv > taxonomy_fixed_1d.tsv 
+qiime tools import \
+  --input-path taxonomy_fixed_1d.tsv \
+  --output-path SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy_fixed.qza \
+  --type 'FeatureData[Taxonomy]' \
+  --format 'HeaderlessTSVTaxonomyFormat'
+#move .qza to parent directory
+# filter out D_4__Mitochondria,D_2__Chloroplast,Unassigned
+qiime taxa filter-table \
+  --i-table SBL_JellePim_16S_trimmed_feature_table.qza \
+  --i-taxonomy SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy_fixed.qza \
+  --p-exclude D_4__Mitochondria,D_2__Chloroplast,Unassigned \
+  --o-filtered-table SBL_JellePim_16S_trimmed_feature_table_NoNonsense
+#export biom for checking ranked cumulative abundances if ASVs in Excel
+qiime tools export \
+  --input-path SBL_JellePim_16S_trimmed_feature_table_NoNonsense.qza \
+  --output-path SBL_JellePim_16S_trimmed_feature_table_NoNonsense
+cd SBL_JellePim_16S_trimmed_feature_table_NoNonsense
+biom convert -i feature-table.biom \
+  -o SBL_JellePim_16S_trimmed_feature_table_NoNonsense.txt --to-tsv
+#replace . with , in SBL_JellePim_16S_trimmed_feature_table_NoNonsense.txt
+cat SBL_JellePim_16S_trimmed_feature_table_NoNonsense.txt | sed 's/\./,/g' > SBL_JellePim_16S_trimmed_feature_table_NoNonsense_commas.txt
+#####
+#####
+#run2
+#####
+#d /media/wolf2/TeamBerendsen/PimJelle/SBL/fastqs/Nanuq211007
+#screen -S download_nanuq211007_pim
+screen -r download_nanuq211007_pim
+#read -p "Login: " login && read -p "Password: " -s password && echo -n "j_username=$login&j_password=$password" > .auth.txt \
+#  && chmod 600 .auth.txt \
+#  && wget -O - "https://ces.genomequebec.com/nanuqMPS/readsetList?projectId=20594&tech=NovaSeq" --no-cookies --no-check-certificate --post-file .auth.txt | wget --no-cookies --no-check-certificate --post-file .auth.txt -ci -; rm -f .auth.txt
+read -p "Login: " login && read -p "Password: " -s password && echo -n "j_username=$login&j_password=$password" > .auth.txt \
+  && chmod 600 .auth.txt \
+  && wget -O - "https://ces.genomequebec.com/nanuqMPS/readsetList?projectId=20594&tech=NovaSeq" --no-cookies --no-check-certificate --post-file .auth.txt |\
+  grep "NS\.1671*" |\
+  grep "\.R\-\|\.P\-\|\.S\-\|\.F\-" |\
+  wget --no-cookies --no-check-certificate --post-file .auth.txt -ci -; rm -f .auth.txt
+mkdir All_16S
+mv *_16S_* All_16S
+cd All_16S
+rename  's/_R1/_L001_R1_001/' *
+rename  's/_R2/_L001_R2_001/' *
+rename  's/NS\.1671\.002\.FLD_ill_[0-9][0-9][0-9]_i7---IDT_i5_[0-9][0-9]\.//' *
+rename  's/NS\.1671\.002\.FLD_ill_[0-9][0-9][0-9]_i7---IDT_i5_[0-9]\.//' *
+cd /media/wolf2/TeamBerendsen/PimJelle/SBL
+conda activate qiime2-2019.7
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path fastqs/Nanuq211007/All_16S \
+  --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+  --output-path run2_SBL_JellePim_16S.qza
+#summarize
+qiime demux summarize \
+  --i-data run2_SBL_JellePim_16S.qza \
+  --o-visualization run2_SBL_JellePim_16S
+###
+#fw seqs start with CCTACGGGAGGCAGCAG, rv reads start with GACTACTAGGGTATCTAATCC
+#cut off primers
+qiime cutadapt trim-paired \
+  --i-demultiplexed-sequences run2_SBL_JellePim_16S.qza \
+  --p-cores 12 \
+  --p-front-f CCTACGGGNGGCWGCAG \
+  --p-front-r GACTACHVGGGTATCTAATCC \
+  --p-discard-untrimmed \
+  --o-trimmed-sequences run2_SBL_JellePim_16S_trimmed.qza \
+  --verbose
+qiime demux summarize \
+  --i-data run2_SBL_JellePim_16S_trimmed.qza \
+  --o-visualization run2_SBL_JellePim_16S_trimmed
+#qualities look great, try dada2 without truncating
+qiime dada2 denoise-paired \
+  --i-demultiplexed-seqs run2_SBL_JellePim_16S_trimmed.qza \
+  --o-table run2_SBL_JellePim_16S_trimmed_feature_table \
+  --o-representative-sequences run2_SBL_JellePim_16S_trimmed_rep_seqs \
+  --p-trunc-len-f 0 \
+  --p-trunc-len-r 225 \
+  --p-max-ee-f 2 \
+  --p-max-ee-r 2 \
+  --p-n-threads 12 \
+  --o-denoising-stats run2_SBL_JellePim_16S_trimmed_denoiseStats \
+  --verbose
+#tabulate denoise stats
+qiime metadata tabulate \
+  --m-input-file run2_SBL_JellePim_16S_trimmed_denoiseStats.qza \
+  --o-visualization run2_SBL_JellePim_16S_trimmed_denoiseStats2.qzv
+###
+#check differences between run1 and run2 by mantel test on braycurtis dissimilarity matrices
+qiime diversity core-metrics \
+  --i-table SBL_JellePim_16S_trimmed_feature_table.qza \
+  --p-sampling-depth 50000 \
+  --m-metadata-file Metadata.txt \
+  --output-dir SBL_JellePim_16S_trimmed_feature_table_coreDiversity_50000
+qiime diversity core-metrics \
+  --i-table run2_SBL_JellePim_16S_trimmed_feature_table.qza \
+  --p-sampling-depth 50000 \
+  --m-metadata-file Metadata.txt \
+  --output-dir run2_SBL_JellePim_16S_trimmed_feature_table_coreDiversity_50000
+qiime diversity mantel \
+  --i-dm1 SBL_JellePim_16S_trimmed_feature_table_coreDiversity_50000/bray_curtis_distance_matrix.qza \
+  --i-dm2 run2_SBL_JellePim_16S_trimmed_feature_table_coreDiversity_50000/bray_curtis_distance_matrix.qza \
+  --p-permutations 9999 \
+  --p-intersect-ids \
+  --p-label1 'run1' \
+  --p-label2 'run2' \
+  --o-visualization mantel_braycurtis_run1_run2
+qiime diversity mantel \
+  --i-dm1 SBL_JellePim_16S_trimmed_feature_table_coreDiversity_50000/jaccard_distance_matrix.qza \
+  --i-dm2 run2_SBL_JellePim_16S_trimmed_feature_table_coreDiversity_50000/jaccard_distance_matrix.qza \
+  --p-permutations 9999 \
+  --p-intersect-ids \
+  --p-label1 'run1' \
+  --p-label2 'run2' \
+  --o-visualization mantel_jaccard_run1_run2
+#if Mantel is ok, then merge feature and repseq tables from run 1 and 2 --> Mantel is good
+qiime feature-table merge \
+  --i-tables SBL_JellePim_16S_trimmed_feature_table.qza \
+  --i-tables run2_SBL_JellePim_16S_trimmed_feature_table.qza \
+  --p-overlap-method 'sum' \
+  --o-merged-table runsMerged_SBL_JellePim_16S_trimmed_feature_table.qza
+#
+#
+#merge all rep-seqs files
+qiime feature-table merge-seqs \
+  --i-data SBL_JellePim_16S_trimmed_rep_seqs.qza \
+  --i-data run2_SBL_JellePim_16S_trimmed_rep_seqs.qza \
+  --o-merged-data runsMerged_SBL_JellePim_16S_trimmed_rep_seqs
+qiime feature-classifier classify-consensus-vsearch \
+  --i-query runsMerged_SBL_JellePim_16S_trimmed_rep_seqs.qza \
+  --i-reference-reads 99_otus_16S_V3V4.qza \
+  --i-reference-taxonomy ref-taxonomy.qza \
+  --p-threads 20 \
+  --o-classification runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy
+# filter out D_4__Mitochondria,D_2__Chloroplast,Unassigned
+qiime taxa filter-table \
+  --i-table runsMerged_SBL_JellePim_16S_trimmed_feature_table.qza \
+  --i-taxonomy runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy.qza \
+  --p-exclude D_4__Mitochondria,D_2__Chloroplast,Unassigned \
+  --o-filtered-table runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense
+#####
+#error with white spaces in tax file
+#export taxonomy file, remove white spaces, re-import
+qiime tools export \
+  --input-path runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy.qza \
+  --output-path runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy
+cd runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy
+cat taxonomy.tsv | sed 's/ //g' > taxonomy_fixed.tsv
+sed '1d' taxonomy_fixed.tsv > taxonomy_fixed_1d.tsv 
+qiime tools import \
+  --input-path taxonomy_fixed_1d.tsv \
+  --output-path runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy_fixed.qza \
+  --type 'FeatureData[Taxonomy]' \
+  --input-format 'HeaderlessTSVTaxonomyFormat'
+cd ..
+#move .qza to parent directory
+# filter out D_4__Mitochondria,D_2__Chloroplast,Unassigned
+qiime taxa filter-table \
+  --i-table runsMerged_SBL_JellePim_16S_trimmed_feature_table.qza \
+  --i-taxonomy runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_assigned_taxonomy_fixed.qza \
+  --p-exclude D_4__Mitochondria,D_2__Chloroplast,Unassigned \
+  --o-filtered-table runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense
+#split Filter and other samples pre-filtering based on read abundances
+qiime feature-table filter-samples  \
+  --i-table runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense.qza \
+  --m-metadata-file Metadata.txt \
+  --p-where "Sample_Type='Filter'" \
+  --o-filtered-table filterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense
+#export filter table
+qiime tools export \
+  --input-path filterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense.qza \
+  --output-path filterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense
+cd filterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense
+biom convert -i feature-table.biom \
+  -o filterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense.txt --to-tsv
+#
+qiime feature-table filter-samples  \
+  --i-table runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense.qza \
+  --m-metadata-file Metadata.txt \
+  --p-where "Sample_Type='Filter'" \
+  --p-exclude-ids \
+  --o-filtered-table nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense
+#summarize feature table
+qiime feature-table summarize \
+  --i-table nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense.qza \
+  --m-sample-metadata-file Metadata.txt \
+  --o-visualization nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense.qzv
+#97% of reads is in top 4455 ASVs out of 100869 ASVs (246 reads minimum) (nonFilterSamples)
+#filter table based on minfreq = 246 and minsample = 5 
+qiime feature-table filter-features \
+  --i-table nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense.qza \
+  --p-min-frequency 246 \
+  --p-min-samples 5 \
+  --o-filtered-table nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV
+#summarize feature table
+qiime feature-table summarize \
+  --i-table nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV.qza \
+  --m-sample-metadata-file Metadata.txt \
+  --o-visualization nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV.qzv
+qiime diversity core-metrics \
+  --i-table nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV.qza \
+  --p-sampling-depth 38000 \
+  --m-metadata-file Metadata.txt \
+  --output-dir nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV_coreDiversity_38000
+#metadata for 4 samples seems to be wrong (filename and PCoAindicate phyllosphere samples, metadata Sample_type indicates rhizosphere or vice versa --> correct to phyllosphere and rerun core diversity)
+qiime diversity core-metrics \
+  --i-table nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV.qza \
+  --p-sampling-depth 38000 \
+  --m-metadata-file Metadata.txt \
+  --output-dir Fixed_nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV_coreDiversity_38000
+#filter repseqs based on feature table
+qiime feature-table filter-seqs \
+  --i-data runsMerged_SBL_JellePim_16S_trimmed_rep_seqs.qza \
+  --i-table  nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV.qza \
+  --o-filtered-data runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_NoNonsense_min5Sample_min246CountPerASV
+#
+qiime feature-classifier classify-consensus-vsearch \
+  --i-query runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_NoNonsense_min5Sample_min246CountPerASV.qza \
+  --i-reference-reads 99_otus_16S_V3V4.qza \
+  --i-reference-taxonomy ref-taxonomy.qza \
+  --p-threads 8 \
+  --o-classification runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_NoNonsense_min5Sample_min246CountPerASV_assigned_taxonomy
+#build tree
+qiime phylogeny align-to-tree-mafft-fasttree \
+  --i-sequences runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_NoNonsense_min5Sample_min246CountPerASV.qza \
+  --output-dir Tree_runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_NoNonsense_min5Sample_min246CountPerASV
+qiime tools export \
+  --input-path Tree_runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_NoNonsense_min5Sample_min246CountPerASV/rooted_tree.qza \
+  --output-path Rooted_Tree_runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_NoNonsense_min5Sample_min246CountPerASV
+#export biom and taxonomies for import in R:phyloseq
+qiime tools export \
+  --input-path nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV.qza \
+  --output-path nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV
+cd nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV
+biom convert -i feature-table.biom \
+  -o nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV.txt --to-tsv
+cd ..
+qiime tools export \
+  --input-path runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_NoNonsense_min5Sample_min246CountPerASV.qza \
+  --output-path runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_NoNonsense_min5Sample_min246CountPerASV
+qiime tools export \
+  --input-path runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_NoNonsense_min5Sample_min246CountPerASV_assigned_taxonomy.qza \
+  --output-path runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_NoNonsense_min5Sample_min246CountPerASV_assigned_taxonomy
+#merge feature table and taxonomy in excel, put in txt file, copy file to R folder on server, then convert to biom
+biom convert -i nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV_wTax.txt \
+  -o nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV_wTax.biom \
+  --to-hdf5 --table-type="OTU table" --process-obs-metadata taxonomy
+#####
+#R, DESeq2 to identifiy HAM bacteria in conditioning phase Hpa-inoculated vs gno and mock
+#phyloseq stuff
+library(phyloseq)
+library(ggplot2)
+library(vegan)
+library(DESeq2)
+library(dplyr)
+library(pairwiseAdonis)
+library(ggpubr)
+library(microbiome)
+theme_set(theme_bw())
+metadata <- import_qiime_sample_data("metadata_SBL_JellePim.txt")
+ASV_table <- import_biom(BIOMfilename = "nonFilterSamples_runsMerged_SBL_JellePim_16S_trimmed_feature_table_NoNonsense_min5Sample_min246CountPerASV_wTax.biom", treefilename="Rooted_Tree_runsMerged_SBL_JellePim_16S_trimmed_rep_seqs_NoNonsense_min5Sample_min246CountPerASV.nwk")
+ASV_table_meta <- merge_phyloseq(ASV_table, metadata)
+colnames(tax_table(ASV_table_meta)) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
+##
+#DESeq2 G1 phyllo, Hpa vs rest
+ASV_table_meta_G1_phyllo = subset_samples(ASV_table_meta, Sample_Type == "Phyllosphere" & Generation == "Generation_1")
+###
+#to easily filter:
+phyloseq_filter_prevalence <- function(physeq, prev.trh = 0.05, abund.trh = NULL, threshold_condition = "OR", abund.type = "total"){
+
+  ## Threshold validation
+  if(prev.trh > 1 | prev.trh < 0){ stop("Prevalence threshold should be non-negative value in the range of [0, 1].\n") }
+  if(!is.null(abund.trh)){ 
+    if(abund.trh <= 0){ stop("Abundance threshold should be non-negative value larger 0.\n") }
+  }
+
+  ## Check for the low-prevalence species (compute the total and average prevalences of the features in each phylum)
+  prevdf_smr <- function(prevdf){
+    ddply(prevdf, "Phylum", function(df1){ data.frame(Average = mean(df1$Prevalence), Total = sum(df1$Prevalence))})
+  }
+  # prevdf_smr( prevalence(physeq) )
+
+  ## Check the prevalence threshold
+  # phyloseq_prevalence_plot(prevdf, physeq)
+
+  ## Define prevalence threshold as % of total samples
+  ## This function is located in 'phyloseq_prevalence_plot.R' file
+  prevalenceThreshold <- prev.trh * phyloseq::nsamples(physeq)
+
+  ## Calculate prevalence (number of samples with OTU) and OTU total abundance
+  prevdf <- prevalence(physeq)
+
+  ## Get the abundance type
+  if(abund.type == "total") { prevdf$AbundFilt <- prevdf$TotalAbundance }
+  if(abund.type == "mean")  { prevdf$AbundFilt <- prevdf$MeanAbundance }
+  if(abund.type == "median"){ prevdf$AbundFilt <- prevdf$MedianAbundance }
+
+  ## Which taxa to preserve
+  if(is.null(abund.trh)) { tt <- prevdf$Prevalence >= prevalenceThreshold }
+  if(!is.null(abund.trh)){
+    ## Keep OTU if it either occurs in many samples OR it has high abundance
+    if(threshold_condition == "OR"){
+      tt <- (prevdf$Prevalence >= prevalenceThreshold | prevdf$AbundFilt >= abund.trh)
+    }
+
+    ## Keep OTU if it occurs in many samples AND it has high abundance
+    if(threshold_condition == "AND"){
+      tt <- (prevdf$Prevalence >= prevalenceThreshold & prevdf$AbundFilt >= abund.trh)
+    }
+  }
+
+  ## Extract names for the taxa we whant to keep
+  keepTaxa <- rownames(prevdf)[tt]
+
+  ## Execute prevalence filter
+  res <- phyloseq::prune_taxa(keepTaxa, physeq)
+  return(res)
+}
+#
+prevalence <- function(physeq, add_tax = TRUE){
+
+  ## Check if taxa are rows
+  trows <- taxa_are_rows(physeq)
+
+  ## Extract OTU table
+  otutab <- as.data.frame(otu_table(physeq))
+
+  ## Transpose OTU table (species should be arranged by rows)
+  if(trows == FALSE){
+    otutab <- t(otutab)
+  }
+
+  ## Estimate prevalence (number of samples with OTU present)
+  prevdf <- apply(X = otutab,
+                  # MARGIN = ifelse(trows, yes = 1, no = 2),  # for a non-transposed data
+                  MARGIN = 1,
+                  FUN = function(x){sum(x > 0)})
+
+  ## Add total and average read counts per OTU
+  prevdf <- data.frame(Prevalence = prevdf,
+                       TotalAbundance = taxa_sums(physeq),
+                       MeanAbundance = rowMeans(otutab),
+                       MedianAbundance = apply(otutab, 1, median))
+
+  ## Add taxonomy table
+  if(add_tax == TRUE && !is.null(tax_table(physeq, errorIfNULL = F))){
+    prevdf <- cbind(prevdf, tax_table(physeq))
+  }
+  return(prevdf)
+}
+ASV_table_meta_G1_phyllo_filtered <- phyloseq_filter_prevalence(ASV_table_meta_G1_phyllo, prev.trh = 0.17, abund.trh = NULL)
+DESeq2_samples_phyllo_G2noHpa_G1GnoHpa = phyloseq_to_deseq2(ASV_table_meta_G1_phyllo_filtered, ~Hpa_factor)
+## work around for error: every gene contains at least one zero, cannot compute log geometric means
+# calculate geometric means prior to estimate size factors
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
+geoMeans = apply(counts(DESeq2_samples_phyllo_G2noHpa_G1GnoHpa), 1, gm_mean)
+DESeq2_samples_phyllo_G2noHpa_G1GnoHpa = estimateSizeFactors(DESeq2_samples_phyllo_G2noHpa_G1GnoHpa, geoMeans = geoMeans)
+DESeq2_samples_phyllo_G2noHpa_G1GnoHpa = DESeq(DESeq2_samples_phyllo_G2noHpa_G1GnoHpa, fitType="local")
+#shrink log fold changes
+resultsNames(DESeq2_samples_phyllo_G2noHpa_G1GnoHpa) # indicates order is other vs Hpa, pay attention! --> negative log2foldchange means enriched in Hpa
+resLFC_samples_phyllo_G2noHpa_G1GnoHpa <- lfcShrink(DESeq2_samples_phyllo_G2noHpa_G1GnoHpa, coef="Hpa_factor_Other_vs_Hpa")
+alpha = 0.05
+sigtab_samples_phyllo_G2noHpa_G1GnoHpa = resLFC_samples_phyllo_G2noHpa_G1GnoHpa[which(resLFC_samples_phyllo_G2noHpa_G1GnoHpa$padj < alpha), ]
+sigtab_samples_phyllo_G2noHpa_G1GnoHpa = cbind(as(sigtab_samples_phyllo_G2noHpa_G1GnoHpa, "data.frame"), as(tax_table(ASV_table_meta_G1_phyllo_filtered)[rownames(sigtab_samples_phyllo_G2noHpa_G1GnoHpa), ], "matrix"))
+head(sigtab_samples_phyllo_G2noHpa_G1GnoHpa)
+dim(sigtab_samples_phyllo_G2noHpa_G1GnoHpa)
+#write.csv(sigtab_samples_phyllo_G2noHpa_G1GnoHpa, file = "sigtab_samples_phyllo_G1_HpaVsRest.csv")
+#######
+#Negative and significant log2fold changes in sigtab_samples_phyllo_G1_HpaVsRest.txt were used to define HAM bacteria for remainder of analyses --> 52 ASVs
+###
+#specified in DESeq2_G1_Phyllo_HpaEnriched.txt on https://github.com/pimgoossens/Hpa_associated_microbiomes/tree/main/Figure_6/Data
+####################
+##########
 #Fig. 6A
 theme_set(theme_bw())
 table <- read.table("Supporting_data_figure_6A.csv", header = TRUE, sep = ";")
