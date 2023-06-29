@@ -319,7 +319,7 @@ qiime alignment mafft \
 qiime alignment mask \
   --i-alignment ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned.qza \
   --o-masked-alignment  ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned_masked
-#make phylosgenetic tree
+#make phylogenetic tree
 qiime phylogeny fasttree \
   --i-alignment ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned_masked.qza \
   --o-tree ASVs_Noco2_Cala2_UU_MPIPZ_any_overlap_rep_seqs_aligned_masked_unrootedtree.qza
@@ -345,65 +345,67 @@ qiime tools export \
 #Barplots showing only 4 overlapping ASVs UU MPIPZ, 
 #####
 setwd("C:/Users/3378012/surfdrive/UU/Shared_Folder/Manuscript_outline/Second_try_September2019")
-table <- read.table("Enriched_ASVs_Noco2_Cala2_UU_MPIPZ.txt", header = TRUE, sep = "\t")
-theme_set(theme_bw())
+table <- read.table("Enriched_ASVs_Noco2_Cala2_UU_MPIPZ_inclProC24.txt", header = TRUE, sep = "\t")
+#from proportions to percentages
+table$Xanthomonas <- table$Xanthomonas * 100
+table$Comamonadaceae <- table$Comamonadaceae * 100
+table$Arthrobacter <- table$Arthrobacter * 100
+table$Sphingobium <- table$Sphingobium * 100
+#theme_set(theme_bw())
 table$Treatment <- factor(table$Treatment, levels = c('Mock', 'Noco2', 'Cala2'))
 table$Location <- factor(table$Location, levels = c('UU', 'MPIPZ'))
 library(gridExtra)
-Xanthomonas <- ggbarplot(table, x = "Treatment", y = "Xanthomonas", fill = "Location", 
-       add = "mean_se", add.params = list(group = "Location"),
-       position = position_dodge(0.8)) +
-	   scale_y_continuous(name = "Abundance (%)") +
-	   coord_cartesian(ylim=c(0,10)) +
-	   scale_fill_manual(values=c(UU = "red", MPIPZ = "#CC0033")) +
-	   ggtitle("Xanthomonas a0e1a") +
-	   theme(legend.position = 'none',
-	   axis.title.x=element_blank(),
-	   axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
-	   axis.title.y=element_blank(),
-	   axis.text.y=element_text(size = 10),
-	   plot.title = element_text(hjust = 0.5, size = 10))
+Xanthomonas <- ggplot(table, aes(x = Treatment, y = Xanthomonas, fill = Location)) +
+  stat_summary(fun.y = mean, geom = "bar", position = position_dodge(0.9)) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", position = position_dodge(0.9), width = 0.2) +
+  geom_jitter(position = position_dodge(0.9), color = "black", alpha = 0.2) +
+  scale_fill_manual(values = c(UU = "red", MPIPZ = "#CC0033")) +
+  labs(x = "Treatment", y = "Abundance (%)", title = "Xanthomonas a0e1a") +
+  theme(legend.position = "none",
+	    axis.title.x=element_blank(),
+        axis.text.x = element_text(angle = 30, hjust = 1, size = 10),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, size = 10))
 print(Xanthomonas)
-Comamonadaceae <- ggbarplot(table, x = "Treatment", y = "Comamonadaceae", fill = "Location", 
-       add = "mean_se", add.params = list(group = "Location"),
-       position = position_dodge(0.8)) +
-	   coord_cartesian(ylim=c(0,10)) +
-	   scale_fill_manual(values=c(UU = "red", MPIPZ = "#CC0033")) +
-	   ggtitle("Acidovorax a4065") +
-	   theme(legend.position = 'none', 
-	   axis.title.x=element_blank(),
-	   axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
-	   axis.title.y=element_blank(),
-	   axis.text.y=element_text(size = 10),
-	   plot.title = element_text(hjust = 0.5, size = 10))
+Comamonadaceae <- ggplot(table, aes(x = Treatment, y = Comamonadaceae, fill = Location)) +
+  stat_summary(fun.y = mean, geom = "bar", position = position_dodge(0.9)) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", position = position_dodge(0.9), width = 0.2) +
+  geom_jitter(position = position_dodge(0.9), color = "black", alpha = 0.2) +
+  scale_fill_manual(values = c(UU = "red", MPIPZ = "#CC0033")) +
+  labs(x = "Treatment", y = "Abundance (%)", title = "Acidovorax a4065") +
+  theme(legend.position = "none",
+	    axis.title.x=element_blank(),
+        axis.text.x = element_text(angle = 30, hjust = 1, size = 10),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, size = 10))
 print(Comamonadaceae)
-Arthrobacter <- ggbarplot(table, x = "Treatment", y = "Arthrobacter", fill = "Location", 
-       add = "mean_se", add.params = list(group = "Location"),
-       position = position_dodge(0.8)) +
-	   scale_y_continuous(name = "Abundance (%)") +
-	   coord_cartesian(ylim=c(0,10)) +
-	   scale_fill_manual(values=c(UU = "red", MPIPZ = "#CC0033")) +
-	   ggtitle("Arthrobacter 42fbd") +
-	   theme(legend.position = 'none',
-	   axis.title.x=element_blank(),
-	   axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
-	   axis.title.y=element_blank(),
-	   axis.text.y=element_text(size = 10),
-	   plot.title = element_text(hjust = 0.5, size = 10))
+Arthrobacter <- ggplot(table, aes(x = Treatment, y = Arthrobacter, fill = Location)) +
+  stat_summary(fun.y = mean, geom = "bar", position = position_dodge(0.9)) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", position = position_dodge(0.9), width = 0.2) +
+  geom_jitter(position = position_dodge(0.9), color = "black", alpha = 0.2) +
+  scale_fill_manual(values = c(UU = "red", MPIPZ = "#CC0033")) +
+  labs(x = "Treatment", y = "Abundance (%)", title = "Arthrobacter 42fbd") +
+  theme(legend.position = "none",
+	    axis.title.x=element_blank(),
+        axis.text.x = element_text(angle = 30, hjust = 1, size = 10),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, size = 10))
 print(Arthrobacter)
-Sphingobium <- ggbarplot(table, x = "Treatment", y = "Sphingobium", fill = "Location", 
-       add = "mean_se", add.params = list(group = "Location"),
-       position = position_dodge(0.8)) +
-	   scale_y_continuous(name = "Abundance (%)") +
-	   coord_cartesian(ylim=c(0,10)) +
-	   scale_fill_manual(values=c(UU = "red", MPIPZ = "#CC0033")) +
-	   ggtitle("Sphingobium ed6be") +
-	   theme(legend.position = 'none',
-	   axis.title.x=element_blank(),
-	   axis.text.x=element_text(angle = 30, hjust = 1, size = 10),
-	   axis.title.y=element_blank(),
-	   axis.text.y=element_text(size = 10),
-	   plot.title = element_text(hjust = 0.5, size = 10))
+Sphingobium <- ggplot(table, aes(x = Treatment, y = Sphingobium, fill = Location)) +
+  stat_summary(fun.y = mean, geom = "bar", position = position_dodge(0.9)) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", position = position_dodge(0.9), width = 0.2) +
+  geom_jitter(position = position_dodge(0.9), color = "black", alpha = 0.2) +
+  scale_fill_manual(values = c(UU = "red", MPIPZ = "#CC0033")) +
+  labs(x = "Treatment", y = "Abundance (%)", title = "Sphingobium ed6be") +
+  theme(legend.position = "none",
+	    axis.title.x=element_blank(),
+        axis.text.x = element_text(angle = 30, hjust = 1, size = 10),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 10),
+        plot.title = element_text(hjust = 0.5, size = 10))
 print(Sphingobium)
 All <- grid.arrange(Xanthomonas, Comamonadaceae, Arthrobacter, Sphingobium, nrow = 1)
 #ggsave(file="Enriched_ASVs_Noco2_Cala2_UU_MPIPZ_smaller.svg", plot=All, width=6, height=2)
