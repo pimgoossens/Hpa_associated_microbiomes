@@ -551,7 +551,6 @@ print(taxbarplot)
 ggsave(file="Phyllo_tax_barplot_G1_OTU.svg", plot=taxbarplot, width=6, height=4.6)
 
 #Student's t-tests were performed in R using t.test(vec_control, vec_treatment, alternative = c("less"), var.equal = TRUE, paired = FALSE, conf.level = 0.95)
-#fdr correction was performed in R using BH(vec_ranked_p-values, alpha = 0.05) of the 'sgof' package.
 
 #Fig. 6D
 G1_rhizo <- subset(Long_samples_relative_3, Sample_Type == "Rhizosphere" & Generation == "Generation_1")
@@ -583,7 +582,8 @@ print(taxbarplot)
 ggsave(file="Rhizo_tax_barplot_G1_OTU.svg", plot=taxbarplot, width=6, height=4.6)
 
 #Student's t-tests were performed in R using t.test(vec_control, vec_treatment, alternative = c("less"), var.equal = TRUE, paired = FALSE, conf.level = 0.95)
-#fdr correction was performed in R using BH(vec_ranked_p-values, alpha = 0.05) of the 'sgof' package.
+
+#for all treatments in the conditioning population (C and D), that were sampled at the same time, fdr correction was performed in R using BH(vec_ranked_p-values, alpha = 0.05) of the 'sgof' package.
 
 #Fig. 6E
 G2_phyllo <- subset(Long_samples_relative_3, Generation == "Generation_2" & Sample_Type == "Phyllosphere")
@@ -680,7 +680,6 @@ print(taxbarplot)
 ggsave(file="Phyllo_tax_barplot_G2_Recruitment_OTU.svg", plot=taxbarplot, width=6, height=4.6)
 
 #Student's t-tests were performed in R using t.test(vec_control, vec_treatment, alternative = c("less"), var.equal = TRUE, paired = FALSE, conf.level = 0.95)
-#fdr correction was performed in R using BH(vec_ranked_p-values, alpha = 0.05) of the 'sgof' package.
 
 #Fig. 6H
 G2_rhizo <- subset(Long_samples_relative_3, Generation == "Generation_2" & Sample_Type == "Rhizosphere")
@@ -710,4 +709,5 @@ print(taxbarplot)
 ggsave(file="rhizo_tax_barplot_G2_Recruitment_OTU.svg", plot=taxbarplot, width=6, height=4.6)
   
 #Student's t-tests were performed in R using t.test(vec_control, vec_treatment, alternative = c("less"), var.equal = TRUE, paired = FALSE, conf.level = 0.95)
-#fdr correction was performed in R using BH(vec_ranked_p-values, alpha = 0.05) of the 'sgof' package.
+
+#for all treatments in the response population (E,F,G,H), that were sampled at the same time, fdr correction was performed in R using BH(vec_ranked_p-values, alpha = 0.05) of the 'sgof' package.
