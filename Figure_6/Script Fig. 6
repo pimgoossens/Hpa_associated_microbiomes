@@ -1,3 +1,13 @@
+#load packages used for Fig. 6A-H
+library(DESeq2)
+library(phyloseq)
+library(vegan)
+library(ggplot2)
+library(dplyr)
+library(ggpubr)
+library(sgof)
+library(scales)
+
 #Fig. 6A
 theme_set(theme_bw())
 table <- read.table("Supporting_data_figure_6A.csv", header = TRUE, sep = ";")
@@ -612,10 +622,6 @@ taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Ge
 print(taxbarplot)
 ggsave(file="Phyllo_tax_barplot_G2_Inheritance_OTU.svg", plot=taxbarplot, width=6, height=4.6)
 
-anova_treatment <- aov(mean_abundance ~ Treatment_generation_1, data = selection)
-{summary(anova_treatment)
-  summary.lm(anova_treatment)}
-
 #Student's t-tests were performed in R using t.test(vec_control, vec_treatment, alternative = c("less"), var.equal = TRUE, paired = FALSE, conf.level = 0.95)
 
 #Fig. 6F
@@ -644,10 +650,6 @@ taxbarplot <- ggplot(selection, aes(x = Treatment, y = mean_abundance, fill = Ge
         axis.text.y=element_text(size=20))
 print(taxbarplot)
 ggsave(file="rhizo_tax_barplot_G2_inheritance_OTU.svg", plot=taxbarplot, width=6, height=4.6)
-
-anova_treatment <- aov(mean_abundance ~ Treatment_generation_1, data = selection)
-{summary(anova_treatment)
-  summary.lm(anova_treatment)}
 
 #Student's t-tests were performed in R using t.test(vec_control, vec_treatment, alternative = c("less"), var.equal = TRUE, paired = FALSE, conf.level = 0.95)
 
