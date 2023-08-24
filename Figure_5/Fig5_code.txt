@@ -63,6 +63,12 @@ print(plot)
 
 ####################
 ##########
+# load packages Fig 5C - E
+library(ggplot2)
+library(ggpubr)
+library(scales)
+library(multcompView)
+
 #Fig. 5C
 theme_set(theme_bw())
 table <- read.table("Supporting_data_figure_5C.csv", header = TRUE, sep = ";")
